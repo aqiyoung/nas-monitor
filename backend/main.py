@@ -14,10 +14,10 @@ app.add_middleware(
 )
 
 # 注册路由
-app.include_router(system.router, prefix="/api/system", tags=["system"])
-app.include_router(network.router, prefix="/api/network", tags=["network"])
-app.include_router(io.router, prefix="/api/io", tags=["io"])
-app.include_router(docker.router, prefix="/api/docker", tags=["docker"])
+app.include_router(system, prefix="/api/system", tags=["system"])
+app.include_router(network, prefix="/api/network", tags=["network"])
+app.include_router(io, prefix="/api/io", tags=["io"])
+app.include_router(docker, prefix="/api/docker", tags=["docker"])
 
 @app.get("/")
 async def root():
