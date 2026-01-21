@@ -142,7 +142,8 @@ const Network: React.FC = () => {
                 <YAxis />
                 <Tooltip formatter={(value, name, props) => {
                   if (props.payload.name === '发送字节' || props.payload.name === '接收字节') {
-                    return [(value / (1024 * 1024)).toFixed(2) + ' MB', name]
+                    const numValue = typeof value === 'number' ? value : parseFloat(value as string);
+                    return [(numValue / (1024 * 1024)).toFixed(2) + ' MB', name]
                   }
                   return [value + ' 个', name]
                 }} />

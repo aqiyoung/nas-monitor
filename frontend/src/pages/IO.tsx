@@ -110,7 +110,7 @@ const IO: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => [value.toFixed(2) + ' MB', '']} />
+                <Tooltip formatter={(value) => [(typeof value === 'number' ? value.toFixed(2) : value) + ' MB', '']} />
                 <Legend />
                 <Bar dataKey="读取字节" fill="#3498db" />
                 <Bar dataKey="写入字节" fill="#e74c3c" />
