@@ -29,7 +29,12 @@ const IO: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
+      const showLoading = diskIO.length === 0 && !systemIO
+      if (showLoading) {
+        setLoading(true)
+      }
+      
       const [diskRes, systemRes] = await Promise.all([
         axios.get('/api/io/disk'),
         axios.get('/api/io/system')

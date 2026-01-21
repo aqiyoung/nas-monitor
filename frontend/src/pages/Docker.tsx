@@ -38,7 +38,12 @@ const Docker: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
+      const showLoading = containers.length === 0 && stats.length === 0 && images.length === 0
+      if (showLoading) {
+        setLoading(true)
+      }
+      
       const [containersRes, statsRes, imagesRes] = await Promise.all([
         axios.get('/api/docker/containers'),
         axios.get('/api/docker/stats'),

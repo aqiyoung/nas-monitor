@@ -45,7 +45,12 @@ const System: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
+      const showLoading = !cpuUsage && !memoryUsage && diskUsage.length === 0
+      if (showLoading) {
+        setLoading(true)
+      }
+      
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
         axios.get('/api/system/cpu'),
         axios.get('/api/system/memory'),

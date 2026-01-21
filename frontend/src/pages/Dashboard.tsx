@@ -56,7 +56,12 @@ const Dashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
+      const showLoading = !systemStatus && !cpuUsage && !memoryUsage && !networkTraffic
+      if (showLoading) {
+        setLoading(true)
+      }
+      
       const [systemRes, cpuRes, memoryRes, networkRes] = await Promise.all([
         axios.get('/api/system/status'),
         axios.get('/api/system/cpu'),

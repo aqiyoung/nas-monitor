@@ -34,7 +34,12 @@ const Network: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
+      const showLoading = !networkTraffic && networkInterfaces.length === 0
+      if (showLoading) {
+        setLoading(true)
+      }
+      
       const [trafficRes, interfacesRes] = await Promise.all([
         axios.get('/api/network/traffic'),
         axios.get('/api/network/interfaces')
