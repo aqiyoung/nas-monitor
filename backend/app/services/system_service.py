@@ -1,5 +1,6 @@
 import psutil
 import platform
+import time
 from datetime import datetime
 
 def get_system_status():
@@ -15,8 +16,7 @@ def get_system_status():
 
 def get_uptime():
     """获取系统运行时间"""
-    uptime_seconds = int(psutil.boot_time() - psutil.time.time())
-    uptime_seconds = abs(uptime_seconds)
+    uptime_seconds = int(time.time() - psutil.boot_time())
     days = uptime_seconds // (24 * 3600)
     hours = (uptime_seconds % (24 * 3600)) // 3600
     minutes = (uptime_seconds % 3600) // 60
@@ -25,9 +25,15 @@ def get_uptime():
 
 def get_cpu_usage():
     """获取 CPU 使用情况"""
+    # 只调用一次cpu_percent，使用interval=0获取当前值
+    psutil.cpu_percent(interval=0)
+    # 立即获取当前CPU使用率，不阻塞
+    total_usage = psutil.cpu_percent(interval=0)
+    per_core_usage = psutil.cpu_percent(interval=0, percpu=True)
+    
     return {
-        "total_usage": psutil.cpu_percent(interval=1),
-        "per_core_usage": psutil.cpu_percent(interval=1, percpu=True),
+        "total_usage": total_usage,
+        "per_core_usage": per_core_usage,
         "cpu_count": {
             "physical": psutil.cpu_count(logical=False),
             "logical": psutil.cpu_count(logical=True)
