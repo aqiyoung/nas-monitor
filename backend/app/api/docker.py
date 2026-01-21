@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from app.services import docker_service
 
 router = APIRouter()
@@ -24,5 +24,13 @@ async def get_images():
     """获取 Docker 镜像信息"""
     try:
         return docker_service.get_images()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/images/pull")
+async def pull_docker_image(image_name: str = Body(..., embed=True)):
+    """拉取最新的 Docker 镜像"""
+    try:
+        return docker_service.pull_image(image_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

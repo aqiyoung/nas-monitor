@@ -15,9 +15,15 @@ const Login: React.FC = () => {
     setError(null)
 
     try {
-      const response = await axios.post('/api/auth/login', {
-        username,
-        password
+      // 使用application/x-www-form-urlencoded格式发送登录请求
+      const params = new URLSearchParams()
+      params.append('username', username)
+      params.append('password', password)
+      
+      const response = await axios.post('/api/auth/login', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       })
 
       // 存储token到localStorage

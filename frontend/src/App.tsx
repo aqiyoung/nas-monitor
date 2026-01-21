@@ -6,6 +6,8 @@ import Network from './pages/Network'
 import IO from './pages/IO'
 import Docker from './pages/Docker'
 import Login from './pages/Login'
+import Alarm from './pages/Alarm'
+import UserManagement from './pages/UserManagement'
 import { useEffect } from 'react'
 
 // 受保护的路由组件
@@ -42,17 +44,21 @@ function App() {
                   <NavLink to="/network" className={({ isActive }) => isActive ? 'active' : ''}>网络流量</NavLink>
                   <NavLink to="/io" className={({ isActive }) => isActive ? 'active' : ''}>IO 状态</NavLink>
                   <NavLink to="/docker" className={({ isActive }) => isActive ? 'active' : ''}>Docker 监控</NavLink>
+                  <NavLink to="/alarm" className={({ isActive }) => isActive ? 'active' : ''}>告警管理</NavLink>
+                  <NavLink to="/user" className={({ isActive }) => isActive ? 'active' : ''}>用户管理</NavLink>
                 </nav>
               </header>
               
               <main className="container">
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/system" element={<System />} />
-                  <Route path="/network" element={<Network />} />
-                  <Route path="/io" element={<IO />} />
-                  <Route path="/docker" element={<Docker />} />
-                </Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/system" element={<System />} />
+                    <Route path="/network" element={<Network />} />
+                    <Route path="/io" element={<IO />} />
+                    <Route path="/docker" element={<Docker />} />
+                    <Route path="/alarm" element={<Alarm />} />
+                    <Route path="/user" element={<UserManagement />} />
+                  </Routes>
               </main>
             </div>
           )} />

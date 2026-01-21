@@ -1,0 +1,14 @@
+[
+  {
+    "id": "a5d9a7f2-06f5-41ae-89c2-f5c71c796611",
+    "alarm_type": "network",
+    "sub_type": "external_ip",
+    "enabled": true,
+    "threshold": 0.0,
+    "duration": 0,
+    "severity": "warning",
+    "push_methods": [],
+    "created_at": "2026-01-21 22:37:37.113258",
+    "updated_at": "2026-01-21 22:54:11.213853"
+  }
+]

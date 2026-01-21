@@ -1,0 +1,10 @@
+[
+  {
+    "username": "admin",
+    "disabled": false,
+    "id": "642e3d81-8bbd-4341-8020-55fe5e863edd",
+    "hashed_password": "$pbkdf2-sha256$29000$yNmbM8ZYqxUCAADgHMM45w$FKRaCH2BIf3un8NIfmN/u0XFeE/6ZRmhO8c.pAaOEfE",
+    "created_at": "2026-01-21 23:29:25.112273",
+    "updated_at": "2026-01-21 23:29:25.112321"
+  }
+]

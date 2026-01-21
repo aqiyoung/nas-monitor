@@ -4,6 +4,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
+from app.services.user.user_storage import storage
 
 # 创建路由
 router = APIRouter()
@@ -19,35 +20,26 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 # 配置OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-# 模拟用户数据库
-fake_users_db = {
-    "admin": {
-        "username": "admin",
-        "hashed_password": pwd_context.hash("password"),
-        "disabled": False,
-    }
-}
-
 # 验证密码
 def verify_password(plain_password, hashed_password):
     # bcrypt算法限制密码长度不超过72字节
     return pwd_context.verify(plain_password[:72], hashed_password)
 
 # 获取用户
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return user_dict
+def get_user(username: str):
+    user = storage.get_user(username)
+    if user:
+        return user.dict()
     return None
 
 # 验证用户
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(username: str, password: str):
+    user = storage.get_user(username)
     if not user:
         return False
-    if not verify_password(password, user["hashed_password"]):
+    if not verify_password(password, user.hashed_password):
         return False
-    return user
+    return user.dict()
 
 # 创建访问令牌
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -63,7 +55,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 # 登录路由
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=401,
@@ -90,7 +82,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=username)
+    user = get_user(username=username)
     if user is None:
         raise credentials_exception
     return user

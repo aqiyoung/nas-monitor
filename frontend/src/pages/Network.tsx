@@ -32,18 +32,38 @@ const Network: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 数据比较函数，用于判断数据是否真正变化
+  const dataChanged = (oldData: any, newData: any): boolean => {
+    if (oldData === null || newData === null) {
+      return oldData !== newData
+    }
+    
+    // 对于数组，比较其长度和JSON字符串
+    if (Array.isArray(oldData) && Array.isArray(newData)) {
+      if (oldData.length !== newData.length) {
+        return true
+      }
+      return JSON.stringify(oldData) !== JSON.stringify(newData)
+    }
+    
+    // 对于对象，比较其JSON字符串
+    return JSON.stringify(oldData) !== JSON.stringify(newData)
+  }
+
   const fetchData = async () => {
     try {
-      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
-      const showLoading = !networkTraffic && networkInterfaces.length === 0
-      if (showLoading) {
+      // 只有在初始加载且没有任何数据时才显示loading
+      if (!networkTraffic && networkInterfaces.length === 0) {
         setLoading(true)
       }
       
       // 分别处理每个请求，确保一个请求失败不会影响另一个
       const trafficPromise = api.get('/api/network/traffic')
         .then(res => {
-          setNetworkTraffic(res.data)
+          // 只有当数据真正变化时才更新状态
+          if (dataChanged(networkTraffic, res.data)) {
+            setNetworkTraffic(res.data)
+          }
           return res.data
         })
         .catch(err => {
@@ -53,7 +73,11 @@ const Network: React.FC = () => {
       
       const interfacesPromise = api.get('/api/network/interfaces')
         .then(res => {
-          setNetworkInterfaces(res.data || [])
+          const newInterfaces = res.data || []
+          // 只有当数据真正变化时才更新状态
+          if (dataChanged(networkInterfaces, newInterfaces)) {
+            setNetworkInterfaces(newInterfaces)
+          }
           return res.data
         })
         .catch(err => {
@@ -63,12 +87,19 @@ const Network: React.FC = () => {
         })
       
       await Promise.all([trafficPromise, interfacesPromise])
-      setError(null)
+      
+      // 只有在有错误时才设置error，否则保持null
+      if (error) {
+        setError(null)
+      }
     } catch (err) {
       setError('获取网络数据失败')
       console.error(err)
     } finally {
-      setLoading(false)
+      // 只有在初始加载时才设置loading为false
+      if (loading) {
+        setLoading(false)
+      }
     }
   }
 
@@ -77,14 +108,6 @@ const Network: React.FC = () => {
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
   }, [])
-
-  if (loading) {
-    return <div className="loading">加载中...</div>
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>
-  }
 
   // 准备图表数据
   const chartData = [
@@ -112,45 +135,44 @@ const Network: React.FC = () => {
 
   return (
     <div>
+      {loading && <div className="loading-overlay">加载中...</div>}
+      {error && <div className="error-overlay">{error}</div>}
+      
       <div className="grid">
         <div className="card">
           <h2>网络流量统计</h2>
-          {networkTraffic && (
-            <>
-              <div className="metric">
-                <span className="metric-label">发送字节数</span>
-                <span className="metric-value">{(networkTraffic.bytes_sent / (1024 * 1024)).toFixed(2)} MB</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">接收字节数</span>
-                <span className="metric-value">{(networkTraffic.bytes_recv / (1024 * 1024)).toFixed(2)} MB</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">发送数据包</span>
-                <span className="metric-value">{networkTraffic.packets_sent}</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">接收数据包</span>
-                <span className="metric-value">{networkTraffic.packets_recv}</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">错误输入</span>
-                <span className="metric-value">{networkTraffic.errin}</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">错误输出</span>
-                <span className="metric-value">{networkTraffic.errout}</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">丢弃输入</span>
-                <span className="metric-value">{networkTraffic.dropin}</span>
-              </div>
-              <div className="metric">
-                <span className="metric-label">丢弃输出</span>
-                <span className="metric-value">{networkTraffic.dropout}</span>
-              </div>
-            </>
-          )}
+          <div className="metric">
+            <span className="metric-label">发送字节数</span>
+            <span className="metric-value">{((networkTraffic?.bytes_sent || 0) / (1024 * 1024)).toFixed(2)} MB</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">接收字节数</span>
+            <span className="metric-value">{((networkTraffic?.bytes_recv || 0) / (1024 * 1024)).toFixed(2)} MB</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">发送数据包</span>
+            <span className="metric-value">{networkTraffic?.packets_sent || 0}</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">接收数据包</span>
+            <span className="metric-value">{networkTraffic?.packets_recv || 0}</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">错误输入</span>
+            <span className="metric-value">{networkTraffic?.errin || 0}</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">错误输出</span>
+            <span className="metric-value">{networkTraffic?.errout || 0}</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">丢弃输入</span>
+            <span className="metric-value">{networkTraffic?.dropin || 0}</span>
+          </div>
+          <div className="metric">
+            <span className="metric-label">丢弃输出</span>
+            <span className="metric-value">{networkTraffic?.dropout || 0}</span>
+          </div>
         </div>
 
         <div className="card">
@@ -177,8 +199,8 @@ const Network: React.FC = () => {
 
       <div className="card">
         <h2>网络接口信息</h2>
-        {networkInterfaces.map((iface, index) => (
-          <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+        {networkInterfaces.map((iface) => (
+          <div key={iface.name} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
             <div className="metric">
               <span className="metric-label">接口名称</span>
               <span className="metric-value">{iface.name}</span>
@@ -203,8 +225,8 @@ const Network: React.FC = () => {
             </div>
             <div style={{ marginTop: '10px' }}>
               <div className="metric-label" style={{ marginBottom: '5px' }}>IP 地址</div>
-              {iface.ip_addresses.map((ip, ipIndex) => (
-                <div key={ipIndex} style={{ marginLeft: '20px', fontSize: '0.9rem', color: '#666' }}>
+              {iface.ip_addresses.map((ip) => (
+                <div key={ip.ip} style={{ marginLeft: '20px', fontSize: '0.9rem', color: '#666' }}>
                   {ip.ip} {ip.netmask && `(${ip.netmask})`}
                 </div>
               ))}
@@ -213,7 +235,7 @@ const Network: React.FC = () => {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default Network
+export default Network;

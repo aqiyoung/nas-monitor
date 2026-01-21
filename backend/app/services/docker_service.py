@@ -102,3 +102,28 @@ def get_images():
         print(f"Unexpected error in get_images: {e}")
     
     return result
+
+def pull_image(image_name):
+    """拉取最新的 Docker 镜像"""
+    try:
+        client = docker.from_env()
+        # 拉取最新的镜像
+        image = client.images.pull(image_name)
+        client.close()
+        return {
+            "success": True,
+            "image_id": image.id,
+            "tags": image.tags
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in pull_image: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in pull_image: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }

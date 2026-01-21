@@ -35,12 +35,34 @@ const Docker: React.FC = () => {
   const [images, setImages] = useState<DockerImage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // 拉取镜像相关状态
+  const [newImageName, setNewImageName] = useState<string>('')
+  const [isPulling, setIsPulling] = useState<boolean>(false)
+  const [pullSuccess, setPullSuccess] = useState<boolean>(false)
+  const [pullError, setPullError] = useState<string | null>(null)
+
+  // 数据比较函数，用于判断数据是否真正变化
+  const dataChanged = (oldData: any, newData: any): boolean => {
+    if (oldData === null || newData === null) {
+      return oldData !== newData
+    }
+    
+    // 对于数组，比较其长度和JSON字符串
+    if (Array.isArray(oldData) && Array.isArray(newData)) {
+      if (oldData.length !== newData.length) {
+        return true
+      }
+      return JSON.stringify(oldData) !== JSON.stringify(newData)
+    }
+    
+    // 对于对象，比较其JSON字符串
+    return JSON.stringify(oldData) !== JSON.stringify(newData)
+  }
 
   const fetchData = async () => {
     try {
-      // 初始加载时显示loading，后续刷新只更新数据，不显示loading
-      const showLoading = containers.length === 0 && stats.length === 0 && images.length === 0
-      if (showLoading) {
+      // 只有在初始加载且没有任何数据时才显示loading
+      if (containers.length === 0 && stats.length === 0 && images.length === 0) {
         setLoading(true)
       }
       
@@ -50,10 +72,25 @@ const Docker: React.FC = () => {
         api.get('/api/docker/images')
       ])
       
-      setContainers(containersRes.data || [])
-      setStats(statsRes.data || [])
-      setImages(imagesRes.data || [])
-      setError(null)
+      // 只有当数据真正变化时才更新状态，避免不必要的重新渲染
+      const newContainers = containersRes.data || []
+      const newStats = statsRes.data || []
+      const newImages = imagesRes.data || []
+      
+      if (dataChanged(containers, newContainers)) {
+        setContainers(newContainers)
+      }
+      if (dataChanged(stats, newStats)) {
+        setStats(newStats)
+      }
+      if (dataChanged(images, newImages)) {
+        setImages(newImages)
+      }
+      
+      // 只有在有错误时才设置error，否则保持null
+      if (error) {
+        setError(null)
+      }
     } catch (err) {
       setError('获取 Docker 数据失败：Docker 服务可能未运行或未安装')
       console.error('Docker API Error:', err)
@@ -62,7 +99,10 @@ const Docker: React.FC = () => {
       setStats([])
       setImages([])
     } finally {
-      setLoading(false)
+      // 只有在初始加载时才设置loading为false
+      if (loading) {
+        setLoading(false)
+      }
     }
   }
 
@@ -72,12 +112,29 @@ const Docker: React.FC = () => {
     return () => clearInterval(interval)
   }, [])
 
-  if (loading) {
-    return <div className="loading">加载中...</div>
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>
+  // 处理拉取镜像
+  const handlePullImage = async () => {
+    if (!newImageName.trim()) return
+    
+    setPullSuccess(false)
+    setPullError(null)
+    setIsPulling(true)
+    
+    try {
+      await api.post('/api/docker/images/pull', {
+        image_name: newImageName
+      })
+      
+      // 拉取成功，刷新镜像列表
+      fetchData()
+      setPullSuccess(true)
+      setNewImageName('')
+    } catch (err: any) {
+      console.error('Pull image error:', err)
+      setPullError(err.response?.data?.detail || '拉取镜像失败，请检查镜像名称是否正确')
+    } finally {
+      setIsPulling(false)
+    }
   }
 
   // 准备图表数据
@@ -93,6 +150,9 @@ const Docker: React.FC = () => {
 
   return (
     <div>
+      {loading && <div className="loading-overlay">加载中...</div>}
+      {error && <div className="error-overlay">{error}</div>}
+      
       <div className="grid">
         <div className="card">
           <h2>容器概览</h2>
@@ -118,12 +178,56 @@ const Docker: React.FC = () => {
           <h2>容器 CPU 使用率</h2>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={cpuChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value) => [value + ' %', 'CPU使用率']} />
-                <Bar dataKey="CPU使用率" fill="#3498db" />
+              <BarChart 
+                data={cpuChartData} 
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
+                animationDuration={1500} 
+                animationEasing="ease-in-out"
+              >
+                <defs>
+                  <linearGradient id="cpuGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3498db" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3498db" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 12, fill: '#666' }} 
+                  axisLine={{ stroke: '#ddd' }} 
+                  tickLine={{ stroke: '#ddd' }}
+                />
+                <YAxis 
+                  domain={[0, 100]} 
+                  tick={{ fontSize: 12, fill: '#666' }} 
+                  axisLine={{ stroke: '#ddd' }} 
+                  tickLine={{ stroke: '#ddd' }}
+                  label={{ 
+                    value: '使用率 (%)', 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    style: { textAnchor: 'middle', fontSize: 12, fill: '#666' }
+                  }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                    borderRadius: '8px', 
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    border: '1px solid #e0e0e0'
+                  }} 
+                  formatter={(value) => [`${value}%`, 'CPU使用率']}
+                  labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                />
+                <Bar 
+                  dataKey="CPU使用率" 
+                  fill="url(#cpuGradient)" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={30}
+                  animationDuration={1500}
+                  animationEasing="ease-in-out"
+                  hoverFill="#2980b9"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,12 +237,56 @@ const Docker: React.FC = () => {
           <h2>容器内存使用率</h2>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={memoryChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value) => [value + ' %', '内存使用率']} />
-                <Bar dataKey="内存使用率" fill="#2ecc71" />
+              <BarChart 
+                data={memoryChartData} 
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
+                animationDuration={1500} 
+                animationEasing="ease-in-out"
+              >
+                <defs>
+                  <linearGradient id="memoryGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#2ecc71" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 12, fill: '#666' }} 
+                  axisLine={{ stroke: '#ddd' }} 
+                  tickLine={{ stroke: '#ddd' }}
+                />
+                <YAxis 
+                  domain={[0, 100]} 
+                  tick={{ fontSize: 12, fill: '#666' }} 
+                  axisLine={{ stroke: '#ddd' }} 
+                  tickLine={{ stroke: '#ddd' }}
+                  label={{ 
+                    value: '使用率 (%)', 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    style: { textAnchor: 'middle', fontSize: 12, fill: '#666' }
+                  }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                    borderRadius: '8px', 
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    border: '1px solid #e0e0e0'
+                  }} 
+                  formatter={(value) => [`${value}%`, '内存使用率']}
+                  labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                />
+                <Bar 
+                  dataKey="内存使用率" 
+                  fill="url(#memoryGradient)" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={30}
+                  animationDuration={1500}
+                  animationEasing="ease-in-out"
+                  hoverFill="#27ae60"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -148,8 +296,8 @@ const Docker: React.FC = () => {
       <div className="card">
         <h2>容器列表</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
-          {containers.map((container, index) => (
-            <div key={index} style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+          {containers.map((container) => (
+            <div key={container.id} style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
               <div className="metric">
                 <span className="metric-label">容器名称</span>
                 <span className="metric-value">{container.name}</span>
@@ -178,8 +326,8 @@ const Docker: React.FC = () => {
       <div className="card">
         <h2>镜像列表</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
-          {images.map((image, index) => (
-            <div key={index} style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+          {images.map((image) => (
+            <div key={image.id} style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
               <div className="metric">
                 <span className="metric-label">镜像 ID</span>
                 <span className="metric-value" style={{ fontSize: '0.8rem' }}>{image.id.substring(0, 12)}</span>
@@ -208,8 +356,61 @@ const Docker: React.FC = () => {
           ))}
         </div>
       </div>
+
+      <div className="card">
+        <h2>拉取最新镜像</h2>
+        <div style={{ marginBottom: '20px' }}>
+          <div className="metric">
+            <span className="metric-label">镜像名称</span>
+            <input
+              type="text"
+              placeholder="例如: nginx, docker.io/library/nginx, nginx:latest"
+              value={newImageName}
+              onChange={(e) => setNewImageName(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                fontSize: '16px',
+                marginTop: '5px'
+              }}
+              disabled={isPulling}
+            />
+          </div>
+          <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+            <button
+              className="btn btn-primary"
+              onClick={handlePullImage}
+              disabled={isPulling || !newImageName.trim()}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '16px',
+                cursor: isPulling || !newImageName.trim() ? 'not-allowed' : 'pointer',
+                opacity: isPulling || !newImageName.trim() ? 0.7 : 1
+              }}
+            >
+              {isPulling ? '拉取中...' : '拉取镜像'}
+            </button>
+          </div>
+          {pullError && (
+            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#fee', color: '#c33', borderRadius: '4px' }}>
+              {pullError}
+            </div>
+          )}
+          {pullSuccess && (
+            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#efe', color: '#3c3', borderRadius: '4px' }}>
+              镜像拉取成功！
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default Docker
+export default Docker;

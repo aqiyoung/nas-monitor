@@ -3,11 +3,15 @@ from .network import router as network_router
 from .io import router as io_router
 from .docker import router as docker_router
 from .auth import router as auth_router
+from .user import router as user_router
+from .alarm.alarm import router as alarm_router
 
-__all__ = ['system', 'network', 'io', 'docker', 'auth']
+__all__ = ['system', 'network', 'io', 'docker', 'auth', 'user', 'alarm']
 
 system = system_router
 network = network_router
 io = io_router
 docker = docker_router
 auth = auth_router
+user = user_router
+alarm = alarm_router
