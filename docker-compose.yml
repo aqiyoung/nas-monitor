@@ -1,10 +1,8 @@
 services:
   backend:
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile
+    image: ghcr.io/aqiyoung/nas-monitor-backend:latest
     ports:
-      - "8017:8017"
+      - "8017:8000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
     environment:
@@ -12,9 +10,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
+    image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
     ports:
       - "3003:80"
     depends_on:
