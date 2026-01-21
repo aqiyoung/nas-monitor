@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface CPUUsage {
@@ -52,9 +52,9 @@ const System: React.FC = () => {
       }
       
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
-        axios.get('/api/system/cpu'),
-        axios.get('/api/system/memory'),
-        axios.get('/api/system/disk')
+        api.get('/api/system/cpu'),
+        api.get('/api/system/memory'),
+        api.get('/api/system/disk')
       ])
       
       setCpuUsage(cpuRes.data)

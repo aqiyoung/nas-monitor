@@ -4,3 +4,6 @@ psutil
 docker
 sqlalchemy
 python-dotenv
+python-multipart
+passlib
+python-jose

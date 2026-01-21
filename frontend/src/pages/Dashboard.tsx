@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface SystemStatus {
@@ -63,10 +63,10 @@ const Dashboard: React.FC = () => {
       }
       
       const [systemRes, cpuRes, memoryRes, networkRes] = await Promise.all([
-        axios.get('/api/system/status'),
-        axios.get('/api/system/cpu'),
-        axios.get('/api/system/memory'),
-        axios.get('/api/network/traffic')
+        api.get('/api/system/status'),
+        api.get('/api/system/cpu'),
+        api.get('/api/system/memory'),
+        api.get('/api/network/traffic')
       ])
       
       setSystemStatus(systemRes.data)

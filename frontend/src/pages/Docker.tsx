@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface DockerContainer {
@@ -45,18 +45,22 @@ const Docker: React.FC = () => {
       }
       
       const [containersRes, statsRes, imagesRes] = await Promise.all([
-        axios.get('/api/docker/containers'),
-        axios.get('/api/docker/stats'),
-        axios.get('/api/docker/images')
+        api.get('/api/docker/containers'),
+        api.get('/api/docker/stats'),
+        api.get('/api/docker/images')
       ])
       
-      setContainers(containersRes.data)
-      setStats(statsRes.data)
-      setImages(imagesRes.data)
+      setContainers(containersRes.data || [])
+      setStats(statsRes.data || [])
+      setImages(imagesRes.data || [])
       setError(null)
     } catch (err) {
-      setError('获取 Docker 数据失败')
-      console.error(err)
+      setError('获取 Docker 数据失败：Docker 服务可能未运行或未安装')
+      console.error('Docker API Error:', err)
+      // 发生错误时，将数据重置为空数组，确保页面能正常显示
+      setContainers([])
+      setStats([])
+      setImages([])
     } finally {
       setLoading(false)
     }

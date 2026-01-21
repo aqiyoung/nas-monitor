@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
 interface DiskIO {
@@ -36,8 +36,8 @@ const IO: React.FC = () => {
       }
       
       const [diskRes, systemRes] = await Promise.all([
-        axios.get('/api/io/disk'),
-        axios.get('/api/io/system')
+        api.get('/api/io/disk'),
+        api.get('/api/io/system')
       ])
       
       setDiskIO(diskRes.data)

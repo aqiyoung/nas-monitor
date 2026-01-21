@@ -23,12 +23,14 @@ def get_containers():
                 })
             except Exception as e:
                 # 跳过有问题的容器，继续处理其他容器
+                print(f"Error processing container {container.id}: {e}")
                 continue
         
         client.close()
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象，以便前端能正常处理
         print(f"Docker API error: {e}")
+        print(f"Docker service might not be running or not installed.")
     except Exception as e:
         # 捕获其他所有异常，确保函数始终返回列表
         print(f"Unexpected error in get_containers: {e}")
@@ -55,12 +57,14 @@ def get_docker_stats():
                 })
             except Exception as e:
                 # 跳过有问题的容器，继续处理其他容器
+                print(f"Error getting stats for container {container.name}: {e}")
                 continue
         
         client.close()
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象
-        print(f"Docker API error: {e}")
+        print(f"Docker API error in get_docker_stats: {e}")
+        print(f"Docker service might not be running or not installed.")
     except Exception as e:
         # 捕获其他所有异常，确保函数始终返回列表
         print(f"Unexpected error in get_docker_stats: {e}")
@@ -85,12 +89,14 @@ def get_images():
                 })
             except Exception as e:
                 # 跳过有问题的镜像，继续处理其他镜像
+                print(f"Error processing image {image.id}: {e}")
                 continue
         
         client.close()
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象
-        print(f"Docker API error: {e}")
+        print(f"Docker API error in get_images: {e}")
+        print(f"Docker service might not be running or not installed.")
     except Exception as e:
         # 捕获其他所有异常，确保函数始终返回列表
         print(f"Unexpected error in get_images: {e}")

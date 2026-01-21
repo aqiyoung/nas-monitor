@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface NetworkTraffic {
@@ -40,13 +40,29 @@ const Network: React.FC = () => {
         setLoading(true)
       }
       
-      const [trafficRes, interfacesRes] = await Promise.all([
-        axios.get('/api/network/traffic'),
-        axios.get('/api/network/interfaces')
-      ])
+      // 分别处理每个请求，确保一个请求失败不会影响另一个
+      const trafficPromise = api.get('/api/network/traffic')
+        .then(res => {
+          setNetworkTraffic(res.data)
+          return res.data
+        })
+        .catch(err => {
+          console.error('获取网络流量失败:', err)
+          return null
+        })
       
-      setNetworkTraffic(trafficRes.data)
-      setNetworkInterfaces(interfacesRes.data)
+      const interfacesPromise = api.get('/api/network/interfaces')
+        .then(res => {
+          setNetworkInterfaces(res.data || [])
+          return res.data
+        })
+        .catch(err => {
+          console.error('获取网络接口失败:', err)
+          setNetworkInterfaces([])
+          return []
+        })
+      
+      await Promise.all([trafficPromise, interfacesPromise])
       setError(null)
     } catch (err) {
       setError('获取网络数据失败')
