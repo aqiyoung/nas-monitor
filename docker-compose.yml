@@ -5,7 +5,6 @@ services:
       - "8017:8017"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
-      - .:/app  # 挂载当前目录到容器内的 /app 目录
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
