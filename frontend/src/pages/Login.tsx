@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import api from '../utils/api'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 const Login: React.FC = () => {

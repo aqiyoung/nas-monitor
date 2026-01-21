@@ -23,7 +23,6 @@ const ProtectedRoute = () => {
 }
 
 function App() {
-  const token = localStorage.getItem('token')
 
   return (
     <Router>
