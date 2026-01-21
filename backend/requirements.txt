@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+psutil
+docker
+sqlalchemy
+python-dotenv
