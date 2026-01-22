@@ -5,6 +5,7 @@ services:
       - "8017:8017"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
+      - ./backend:/app  # 挂载当前目录下的backend到容器内的/app
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
@@ -19,6 +20,8 @@ services:
     image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
     ports:
       - "3003:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html  # 挂载当前目录下的frontend到容器内的nginx目录
     depends_on:
       backend:
         condition: service_healthy
