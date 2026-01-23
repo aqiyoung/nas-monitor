@@ -34,8 +34,12 @@ class UserStorage:
                     data = json.load(f)
                     for item in data:
                         # 转换日期字符串为datetime对象
-                        item["created_at"] = datetime.fromisoformat(item["created_at"])
-                        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+                        # 处理不同格式的日期字符串，支持空格分隔和T分隔
+                        for key in ["created_at", "updated_at"]:
+                            if isinstance(item[key], str):
+                                # 将空格分隔的日期格式转换为ISO格式（带T分隔符）
+                                item[key] = item[key].replace(" ", "T")
+                                item[key] = datetime.fromisoformat(item[key])
                         user = User(**item)
                         self.users[user.username] = user
             except Exception as e:
