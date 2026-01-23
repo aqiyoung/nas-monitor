@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import api from '../utils/api'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
@@ -20,7 +20,7 @@ const Login: React.FC = () => {
       params.append('username', username)
       params.append('password', password)
       
-      const response = await axios.post('/api/auth/login', params, {
+      const response = await api.post('/api/auth/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
