@@ -28,5 +28,5 @@ services:
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
-    # 确保容器能够访问挂载的文件
-    user: "1000:1000"  # 使用与主机相同的用户ID和组ID
+    # 使用root用户运行nginx容器，确保它能够访问挂载的文件
+    user: "root:root"
