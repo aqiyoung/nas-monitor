@@ -53,7 +53,9 @@ class UserStorage:
     
     def _ensure_admin_user(self):
         """确保存在管理员用户"""
+        admin_user = None
         if "admin" not in self.users:
+            # 创建新的管理员用户
             admin_user = User(
                 id=str(uuid.uuid4()),
                 username="admin",
@@ -63,6 +65,17 @@ class UserStorage:
                 updated_at=datetime.now()
             )
             self.users[admin_user.username] = admin_user
+            print(f"Created new admin user: {admin_user.username}")
+        else:
+            # 检查现有管理员用户的密码是否正确
+            admin_user = self.users["admin"]
+            if not pwd_context.verify("password", admin_user.hashed_password):
+                # 更新密码为默认密码
+                admin_user.hashed_password = pwd_context.hash("password")
+                admin_user.updated_at = datetime.now()
+                print(f"Updated admin password to default")
+        
+        if admin_user:
             self._save_data()
     
     def get_users(self) -> List[User]:
