@@ -6,12 +6,15 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
       - ./backend:/app  # 挂载当前目录下的backend到容器内的/app
+    working_dir: /app  # 明确指定工作目录
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
     # 明确禁用健康检查，确保容器能够启动
     healthcheck:
       disable: true
+    # 使用绝对路径指定main.py文件
+    command: uvicorn /app/main:app --host 0.0.0.0 --port 8017 --reload
 
   frontend:
     image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
