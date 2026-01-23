@@ -20,13 +20,11 @@ services:
     image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
     ports:
       - "3003:80"
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html  # 挂载构建后的dist目录到容器内的nginx目录
-    working_dir: /usr/share/nginx/html  # 明确指定工作目录
+    # 不使用挂载，让镜像自己处理构建和部署
     depends_on:
       - backend
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
-    # 使用root用户运行nginx容器，确保它能够访问挂载的文件
+    # 使用root用户运行nginx容器，确保它能够访问文件
     user: "root:root"
