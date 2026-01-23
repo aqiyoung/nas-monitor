@@ -5,7 +5,7 @@ from app.api.auth import get_current_active_user
 # 导入并初始化定时任务服务
 import app.services.alarm.scheduler_service
 
-app = FastAPI(title="NAS Monitor API", version="1.0.0")
+app = FastAPI(title="NAS Monitor API", version="1.1.0")
 
 # 配置 CORS
 app.add_middleware(
