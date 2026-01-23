@@ -9,13 +9,9 @@ services:
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
-    # 暂时禁用健康检查，以便容器能够启动
-    # healthcheck:
-    #   test: ["CMD-SHELL", "wget -qO- http://localhost:8017/health || exit 1"]
-    #   interval: 30s
-    #   timeout: 60s
-    #   retries: 10
-    #   start_period: 180s
+    # 明确禁用健康检查，确保容器能够启动
+    healthcheck:
+      disable: true
 
   frontend:
     image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
