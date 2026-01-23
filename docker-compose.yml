@@ -21,7 +21,7 @@ services:
     ports:
       - "3003:80"
     volumes:
-      - ./frontend:/usr/share/nginx/html  # 挂载当前目录下的frontend到容器内的nginx目录
+      - ./frontend/dist:/usr/share/nginx/html  # 挂载构建后的dist目录到容器内的nginx目录
     working_dir: /usr/share/nginx/html  # 明确指定工作目录
     depends_on:
       - backend
