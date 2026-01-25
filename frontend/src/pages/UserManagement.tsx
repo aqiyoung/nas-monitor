@@ -151,7 +151,7 @@ const UserManagement: React.FC = () => {
         </Button>
       </div>
 
-      <Table 
+      <Table<User> 
         dataSource={users} 
         loading={loading} 
         rowKey="username"
@@ -183,10 +183,10 @@ const UserManagement: React.FC = () => {
           key="updated_at"
           render={(updatedAt) => new Date(updatedAt).toLocaleString()}
         />
-        <Table.Column 
+        <Table.Column<User> 
           title="操作" 
           key="action"
-          render={(_, record) => (
+          render={(_, record: User) => (
             <Space size="middle">
               <Tooltip title="编辑">
                 <Button 

@@ -51,8 +51,17 @@ const Alarm: React.FC = () => {
   }, [activeTab]);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
+      // 只在数据为空时设置loading为true（初始加载）
+      const shouldShowLoading = 
+        (activeTab === 'records' && alarmRecords.length === 0) ||
+        (activeTab === 'configs' && alarmConfigs.length === 0) ||
+        (activeTab === 'accessIPs' && accessIPs.length === 0);
+      
+      if (shouldShowLoading) {
+        setLoading(true);
+      }
+      
       if (activeTab === 'records') {
         const response = await api.get('/api/alarm/records');
         setAlarmRecords(response.data);
@@ -139,8 +148,9 @@ const Alarm: React.FC = () => {
         {activeTab === 'records' && (
           <div className="card">
             <h2>告警记录</h2>
+            {/* 只在初始加载时显示loading，数据刷新时不显示 */}
             {loading ? (
-              <div className="loading">加载中...</div>
+              <div className="loading-overlay">加载中...</div>
             ) : (
               <div className="alarm-records">
                 {alarmRecords.length === 0 ? (
@@ -205,8 +215,9 @@ const Alarm: React.FC = () => {
         {activeTab === 'configs' && (
           <div className="card">
             <h2>告警配置</h2>
+            {/* 只在初始加载时显示loading，数据刷新时不显示 */}
             {loading ? (
-              <div className="loading">加载中...</div>
+              <div className="loading-overlay">加载中...</div>
             ) : (
               <div className="alarm-configs">
                 {alarmConfigs.length === 0 ? (
@@ -259,8 +270,9 @@ const Alarm: React.FC = () => {
         {activeTab === 'accessIPs' && (
           <div className="card">
             <h2>访问IP管理</h2>
+            {/* 只在初始加载时显示loading，数据刷新时不显示 */}
             {loading ? (
-              <div className="loading">加载中...</div>
+              <div className="loading-overlay">加载中...</div>
             ) : (
               <div className="access-ips">
                 {accessIPs.length === 0 ? (

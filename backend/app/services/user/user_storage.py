@@ -34,8 +34,12 @@ class UserStorage:
                     data = json.load(f)
                     for item in data:
                         # 转换日期字符串为datetime对象
-                        item["created_at"] = datetime.fromisoformat(item["created_at"])
-                        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+                        # 处理不同格式的日期字符串，支持空格分隔和T分隔
+                        for key in ["created_at", "updated_at"]:
+                            if isinstance(item[key], str):
+                                # 将空格分隔的日期格式转换为ISO格式（带T分隔符）
+                                item[key] = item[key].replace(" ", "T")
+                                item[key] = datetime.fromisoformat(item[key])
                         user = User(**item)
                         self.users[user.username] = user
             except Exception as e:
@@ -53,7 +57,9 @@ class UserStorage:
     
     def _ensure_admin_user(self):
         """确保存在管理员用户"""
+        admin_user = None
         if "admin" not in self.users:
+            # 创建新的管理员用户
             admin_user = User(
                 id=str(uuid.uuid4()),
                 username="admin",
@@ -63,6 +69,17 @@ class UserStorage:
                 updated_at=datetime.now()
             )
             self.users[admin_user.username] = admin_user
+            print(f"Created new admin user: {admin_user.username}")
+        else:
+            # 检查现有管理员用户的密码是否正确
+            admin_user = self.users["admin"]
+            if not pwd_context.verify("password", admin_user.hashed_password):
+                # 更新密码为默认密码
+                admin_user.hashed_password = pwd_context.hash("password")
+                admin_user.updated_at = datetime.now()
+                print(f"Updated admin password to default")
+        
+        if admin_user:
             self._save_data()
     
     def get_users(self) -> List[User]:

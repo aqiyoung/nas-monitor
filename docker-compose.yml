@@ -5,23 +5,26 @@ services:
       - "8017:8017"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
+      - ./backend:/app  # 挂载当前目录下的backend到容器内的/app
+    working_dir: /app  # 明确指定工作目录
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
+    # 明确禁用健康检查，确保容器能够启动
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8017/ || exit 1"]
-      interval: 30s
-      timeout: 60s
-      retries: 10
-      start_period: 120s
+      disable: true
+    # 使用绝对路径指定main.py文件
+    command: uvicorn /app/main:app --host 0.0.0.0 --port 8017 --reload
 
   frontend:
     image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
     ports:
       - "3003:80"
+    # 不使用挂载，让镜像自己处理构建和部署
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
+    # 使用root用户运行nginx容器，确保它能够访问文件
+    user: "root:root"

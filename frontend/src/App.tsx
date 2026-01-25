@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import System from './pages/System'
-import Network from './pages/Network'
-import IO from './pages/IO'
-import Docker from './pages/Docker'
+import Dashboard from './pages/NewDashboard'
+import System from './pages/NewSystem'
+import Network from './pages/NewNetwork'
+import IO from './pages/NewIO'
+import Docker from './pages/NewDocker'
 import Login from './pages/Login'
 import Alarm from './pages/Alarm'
 import UserManagement from './pages/UserManagement'
@@ -126,65 +126,63 @@ const ProtectedRoute = React.memo(() => {
 function App() {
   return (
     <Router>
-      <div className="app-wrapper">
-        <Routes>
-          {/* 登录路由 */}
-          <Route path="/login" element={<Login />} />
-          
-          {/* 受保护的路由 */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <Dashboard />
-                </main>
-              </div>
-            } />
-            <Route path="/system" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <System />
-                </main>
-              </div>
-            } />
-            <Route path="/network" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <Network />
-                </main>
-              </div>
-            } />
-            <Route path="/io" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <IO />
-                </main>
-              </div>
-            } />
-            <Route path="/docker" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <Docker />
-                </main>
-              </div>
-            } />
-            <Route path="/alarm" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <Alarm />
-                </main>
-              </div>
-            } />
-            <Route path="/user" element={
-              <div className="container-fluid">
-                <main className="container">
-                  <UserManagement />
-                </main>
-              </div>
-            } />
-          </Route>
-        </Routes>
-      </div>
+      <Routes>
+        {/* 登录路由 */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* 受保护的路由 */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={
+            <div className="container-fluid">
+              <main className="container">
+                <Dashboard />
+              </main>
+            </div>
+          } />
+          <Route path="/system" element={
+            <div className="container-fluid">
+              <main className="container">
+                <System />
+              </main>
+            </div>
+          } />
+          <Route path="/network" element={
+            <div className="container-fluid">
+              <main className="container">
+                <Network />
+              </main>
+            </div>
+          } />
+          <Route path="/io" element={
+            <div className="container-fluid">
+              <main className="container">
+                <IO />
+              </main>
+            </div>
+          } />
+          <Route path="/docker" element={
+            <div className="container-fluid">
+              <main className="container">
+                <Docker />
+              </main>
+            </div>
+          } />
+          <Route path="/alarm" element={
+            <div className="container-fluid">
+              <main className="container">
+                <Alarm />
+              </main>
+            </div>
+          } />
+          <Route path="/user" element={
+            <div className="container-fluid">
+              <main className="container">
+                <UserManagement />
+              </main>
+            </div>
+          } />
+        </Route>
+      </Routes>
     </Router>
   )
 }

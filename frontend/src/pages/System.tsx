@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -43,60 +43,29 @@ const System: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 数据比较函数，用于判断数据是否真正变化
-  const dataChanged = (oldData: any, newData: any): boolean => {
-    if (oldData === null || newData === null) {
-      return oldData !== newData
-    }
-    
-    // 对于数组，比较其长度和JSON字符串
-    if (Array.isArray(oldData) && Array.isArray(newData)) {
-      if (oldData.length !== newData.length) {
-        return true
-      }
-      return JSON.stringify(oldData) !== JSON.stringify(newData)
-    }
-    
-    // 对于对象，比较其JSON字符串
-    return JSON.stringify(oldData) !== JSON.stringify(newData)
-  }
-
   const fetchData = async () => {
     try {
       // 只有在初始加载且没有任何数据时才显示loading
-      if (!cpuUsage && !memoryUsage && diskUsage.length === 0) {
+      const isInitialLoad = !cpuUsage && !memoryUsage && diskUsage.length === 0
+      if (isInitialLoad) {
         setLoading(true)
       }
-      
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
         api.get('/api/system/cpu'),
         api.get('/api/system/memory'),
         api.get('/api/system/disk')
       ])
-      
-      // 只有当数据真正变化时才更新状态，避免不必要的重新渲染
-      if (dataChanged(cpuUsage, cpuRes.data)) {
-        setCpuUsage(cpuRes.data)
-      }
-      if (dataChanged(memoryUsage, memoryRes.data)) {
-        setMemoryUsage(memoryRes.data)
-      }
-      if (dataChanged(diskUsage, diskRes.data)) {
-        setDiskUsage(diskRes.data)
-      }
-      
-      // 只有在有错误时才设置error，否则保持null
-      if (error) {
-        setError(null)
-      }
+      setCpuUsage(cpuRes.data)
+      setMemoryUsage(memoryRes.data)
+      setDiskUsage(diskRes.data)
+      setError(null)
     } catch (err) {
       setError('获取系统数据失败')
       console.error(err)
     } finally {
-      // 只有在初始加载时才设置loading为false
-      if (loading) {
-        setLoading(false)
-      }
+      // 无论如何，初始加载完成后都要关闭loading
+      // 不依赖闭包中的loading值，确保后续刷新不会显示loading
+      setLoading(false)
     }
   }
 
@@ -106,20 +75,25 @@ const System: React.FC = () => {
     return () => clearInterval(interval)
   }, [])
 
-  const cpuChartData = cpuUsage?.per_core_usage?.map((usage, index) => ({
-    name: `核心 ${index + 1}`,
-    使用率: usage
-  })) || []
+  // 使用useMemo缓存图表数据，只有当相关数据变化时才重新计算
+  const cpuChartData = useMemo(() => {
+    return cpuUsage?.per_core_usage?.map((usage, index) => ({
+      name: `核心 ${index + 1}`,
+      使用率: usage
+    })) || []
+  }, [cpuUsage])
 
-  const diskChartData = diskUsage.map(disk => ({
-    name: disk.mountpoint,
-    使用率: disk.percent
-  }))
+  const diskChartData = useMemo(() => {
+    return diskUsage.map(disk => ({
+      name: disk.mountpoint,
+      使用率: disk.percent
+    }))
+  }, [diskUsage])
 
   return (
     <div>
       {loading && <div className="loading-overlay">加载中...</div>}
-      {error && <div className="error-overlay">{error}</div>}
+      {error && <div className="error">{error}</div>}
       
       <div className="grid">
         <div className="card">
@@ -140,9 +114,7 @@ const System: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={cpuChartData} 
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
-                animationDuration={1500} 
-                animationEasing="ease-in-out"
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <defs>
                   <linearGradient id="cpuGradient" x1="0" y1="0" x2="0" y2="1">
@@ -184,9 +156,6 @@ const System: React.FC = () => {
                   fill="url(#cpuGradient)" 
                   radius={[4, 4, 0, 0]} 
                   barSize={30}
-                  animationDuration={1500}
-                  animationEasing="ease-in-out"
-                  hoverFill="#2980b9"
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -228,9 +197,7 @@ const System: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={diskChartData} 
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
-              animationDuration={1500} 
-              animationEasing="ease-in-out"
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <defs>
                 <linearGradient id="diskGradient" x1="0" y1="0" x2="0" y2="1">
@@ -272,9 +239,6 @@ const System: React.FC = () => {
                 fill="url(#diskGradient)" 
                 radius={[4, 4, 0, 0]} 
                 barSize={30}
-                animationDuration={1500}
-                animationEasing="ease-in-out"
-                hoverFill="#27ae60"
               />
             </BarChart>
           </ResponsiveContainer>
@@ -298,7 +262,8 @@ const System: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default System;
+// 使用React.memo包装System组件，避免不必要的重新渲染
+export default React.memo(System)

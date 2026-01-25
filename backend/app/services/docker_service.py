@@ -1,9 +1,8 @@
-import docker
-
 def get_containers():
     """获取所有容器信息"""
     result = []
     try:
+        import docker
         client = docker.from_env()
         containers = client.containers.list(all=True)
         
@@ -27,6 +26,9 @@ def get_containers():
                 continue
         
         client.close()
+    except ImportError:
+        # 记录错误，但返回空列表而不是错误对象，以便前端能正常处理
+        print("Docker library not installed.")
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象，以便前端能正常处理
         print(f"Docker API error: {e}")
@@ -41,6 +43,7 @@ def get_docker_stats():
     """获取 Docker 容器统计信息"""
     stats = []
     try:
+        import docker
         client = docker.from_env()
         containers = client.containers.list()
         
@@ -61,6 +64,9 @@ def get_docker_stats():
                 continue
         
         client.close()
+    except ImportError:
+        # 记录错误，但返回空列表而不是错误对象
+        print("Docker library not installed.")
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象
         print(f"Docker API error in get_docker_stats: {e}")
@@ -75,6 +81,7 @@ def get_images():
     """获取 Docker 镜像信息"""
     result = []
     try:
+        import docker
         client = docker.from_env()
         images = client.images.list()
         
@@ -93,6 +100,9 @@ def get_images():
                 continue
         
         client.close()
+    except ImportError:
+        # 记录错误，但返回空列表而不是错误对象
+        print("Docker library not installed.")
     except docker.errors.DockerException as e:
         # 记录错误，但返回空列表而不是错误对象
         print(f"Docker API error in get_images: {e}")
@@ -106,6 +116,7 @@ def get_images():
 def pull_image(image_name):
     """拉取最新的 Docker 镜像"""
     try:
+        import docker
         client = docker.from_env()
         # 拉取最新的镜像
         image = client.images.pull(image_name)
@@ -114,6 +125,13 @@ def pull_image(image_name):
             "success": True,
             "image_id": image.id,
             "tags": image.tags
+        }
+    except ImportError:
+        # 记录错误，但返回失败响应而不是错误对象
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
         }
     except docker.errors.DockerException as e:
         print(f"Docker API error in pull_image: {e}")
