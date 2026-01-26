@@ -6,6 +6,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
       - ./backend:/app  # 挂载当前目录下的backend到容器内的/app
+      - ./backend/data:/app/data  # 单独挂载数据目录，确保用户数据持久化
     working_dir: /app  # 明确指定工作目录
     environment:
       - TZ=Asia/Shanghai

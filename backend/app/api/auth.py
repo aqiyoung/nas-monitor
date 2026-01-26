@@ -22,8 +22,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 # 验证密码
 def verify_password(plain_password, hashed_password):
-    # bcrypt算法限制密码长度不超过72字节
-    return pwd_context.verify(plain_password[:72], hashed_password)
+    # 使用pbkdf2_sha256算法，没有密码长度限制
+    return pwd_context.verify(plain_password, hashed_password)
 
 # 获取用户
 def get_user(username: str):

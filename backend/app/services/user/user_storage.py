@@ -13,11 +13,13 @@ class UserStorage:
     """用户存储服务"""
     
     def __init__(self, storage_dir: str = "./data"):
-        self.storage_dir = storage_dir
+        # 使用绝对路径，确保在不同环境下都能正确找到数据目录
+        self.storage_dir = os.path.abspath(storage_dir)
         self.users: Dict[str, User] = {}
         
         # 确保存储目录存在
         os.makedirs(self.storage_dir, exist_ok=True)
+        print(f"UserStorage initialized with storage_dir: {self.storage_dir}")
         
         # 加载数据
         self._load_data()
