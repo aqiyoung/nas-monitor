@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import api from '../utils/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -41,32 +41,62 @@ const Docker: React.FC = () => {
   const [pullSuccess, setPullSuccess] = useState<boolean>(false)
   const [pullError, setPullError] = useState<string | null>(null)
 
+  // 数据比较函数，用于判断数据是否真正变化
+  const dataChanged = (oldData: any, newData: any): boolean => {
+    if (oldData === null || newData === null) {
+      return oldData !== newData
+    }
+    
+    // 对于数组，比较其长度和JSON字符串
+    if (Array.isArray(oldData) && Array.isArray(newData)) {
+      if (oldData.length !== newData.length) {
+        return true
+      }
+      return JSON.stringify(oldData) !== JSON.stringify(newData)
+    }
+    
+    // 对于对象，比较其JSON字符串
+    return JSON.stringify(oldData) !== JSON.stringify(newData)
+  }
+
   const fetchData = async () => {
     try {
       // 只有在初始加载且没有任何数据时才显示loading
-      const isInitialLoad = containers.length === 0 && stats.length === 0 && images.length === 0
-      if (isInitialLoad) {
+      if (containers.length === 0 && stats.length === 0 && images.length === 0) {
         setLoading(true)
       }
+      
       const [containersRes, statsRes, imagesRes] = await Promise.all([
         api.get('/api/docker/containers'),
         api.get('/api/docker/stats'),
         api.get('/api/docker/images')
       ])
-      setContainers(containersRes.data || [])
-      setStats(statsRes.data || [])
-      setImages(imagesRes.data || [])
-      setError(null)
+      
+      // 只有当数据真正变化时才更新状态，避免不必要的重新渲染
+      const newContainers = containersRes.data || []
+      const newStats = statsRes.data || []
+      const newImages = imagesRes.data || []
+      
+      if (dataChanged(containers, newContainers)) {
+        setContainers(newContainers)
+      }
+      if (dataChanged(stats, newStats)) {
+        setStats(newStats)
+      }
+      if (dataChanged(images, newImages)) {
+        setImages(newImages)
+      }
+      
+      // 只有在有错误时才设置error，否则保持null
+      if (error) {
+        setError(null)
+      }
     } catch (err) {
+      // 发生错误时，仅更新error状态，不重置数据，避免页面闪烁
       setError('获取 Docker 数据失败：Docker 服务可能未运行或未安装')
       console.error('Docker API Error:', err)
-      // 发生错误时，将数据重置为空数组，确保页面能正常显示
-      setContainers([])
-      setStats([])
-      setImages([])
     } finally {
-      // 无论如何，初始加载完成后都要关闭loading
-      // 不依赖闭包中的loading值，确保后续刷新不会显示loading
+      // 始终在请求完成后设置loading为false，确保页面正常显示
       setLoading(false)
     }
   }
@@ -102,25 +132,20 @@ const Docker: React.FC = () => {
     }
   }
 
-  // 使用useMemo缓存图表数据
-  const cpuChartData = useMemo(() => {
-    return stats.map(container => ({
-      name: container.name,
-      CPU使用率: (container.cpu_usage / 10000000).toFixed(2) // 转换为百分比
-    }))
-  }, [stats])
+  // 准备图表数据
+  const cpuChartData = stats.map(container => ({
+    name: container.name,
+    CPU使用率: (container.cpu_usage / 10000000).toFixed(2) // 转换为百分比
+  }))
 
-  const memoryChartData = useMemo(() => {
-    return stats.map(container => ({
-      name: container.name,
-      内存使用率: ((container.memory_usage / container.memory_limit) * 100).toFixed(2) // 转换为百分比
-    }))
-  }, [stats])
+  const memoryChartData = stats.map(container => ({
+    name: container.name,
+    内存使用率: ((container.memory_usage / container.memory_limit) * 100).toFixed(2) // 转换为百分比
+  }))
 
   return (
     <div>
-      {loading && <div className="loading-overlay">加载中...</div>}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error-overlay">{error}</div>}
       
       <div className="grid">
         <div className="card">
@@ -149,14 +174,9 @@ const Docker: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={cpuChartData} 
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
+                animationDuration={0} 
               >
-                <defs>
-                  <linearGradient id="cpuGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3498db" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3498db" stopOpacity={0.2}/>
-                  </linearGradient>
-                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
                 <XAxis 
                   dataKey="name" 
@@ -188,9 +208,10 @@ const Docker: React.FC = () => {
                 />
                 <Bar 
                   dataKey="CPU使用率" 
-                  fill="url(#cpuGradient)" 
+                  fill="#3498db" 
                   radius={[4, 4, 0, 0]} 
                   barSize={30}
+                  animationDuration={0}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -203,14 +224,9 @@ const Docker: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={memoryChartData} 
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
+                animationDuration={0} 
               >
-                <defs>
-                  <linearGradient id="memoryGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#2ecc71" stopOpacity={0.2}/>
-                  </linearGradient>
-                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
                 <XAxis 
                   dataKey="name" 
@@ -242,9 +258,10 @@ const Docker: React.FC = () => {
                 />
                 <Bar 
                   dataKey="内存使用率" 
-                  fill="url(#memoryGradient)" 
+                  fill="#2ecc71" 
                   radius={[4, 4, 0, 0]} 
                   barSize={30}
+                  animationDuration={0}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -369,8 +386,7 @@ const Docker: React.FC = () => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-// 使用React.memo包装Docker组件，避免不必要的重新渲染
-export default React.memo(Docker)
+export default Docker;

@@ -117,6 +117,7 @@ const BarChartComponent: React.FC<BarChartComponentProps> = React.memo(({
           barGap={8}
           barCategoryGap={20}
           style={{ border: 'none' }}
+          animationDuration={0}
         >
           <defs>
             {/* 为每个数据系列创建渐变 */}
@@ -184,6 +185,7 @@ const BarChartComponent: React.FC<BarChartComponentProps> = React.memo(({
               radius={[4, 4, 0, 0]} 
               barSize={20}
               style={{ stroke: 'none', outline: 'none' }}
+              animationDuration={0}
             />
           ))}
         </BarChart>

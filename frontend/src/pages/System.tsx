@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import api from '../utils/api'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface CPUUsage {
   total_usage: number
-  per_core_usage: number[]
   cpu_count: {
     physical: number
     logical: number
@@ -45,9 +43,8 @@ const System: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // 只有在初始加载且没有任何数据时才显示loading
-      const isInitialLoad = !cpuUsage && !memoryUsage && diskUsage.length === 0
-      if (isInitialLoad) {
+      // 只有在首次加载且没有任何数据时才显示loading
+      if (!cpuUsage && !memoryUsage && diskUsage.length === 0) {
         setLoading(true)
       }
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
@@ -63,8 +60,7 @@ const System: React.FC = () => {
       setError('获取系统数据失败')
       console.error(err)
     } finally {
-      // 无论如何，初始加载完成后都要关闭loading
-      // 不依赖闭包中的loading值，确保后续刷新不会显示loading
+      // 始终在请求完成后设置loading为false
       setLoading(false)
     }
   }
@@ -75,25 +71,9 @@ const System: React.FC = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // 使用useMemo缓存图表数据，只有当相关数据变化时才重新计算
-  const cpuChartData = useMemo(() => {
-    return cpuUsage?.per_core_usage?.map((usage, index) => ({
-      name: `核心 ${index + 1}`,
-      使用率: usage
-    })) || []
-  }, [cpuUsage])
-
-  const diskChartData = useMemo(() => {
-    return diskUsage.map(disk => ({
-      name: disk.mountpoint,
-      使用率: disk.percent
-    }))
-  }, [diskUsage])
-
   return (
     <div>
-      {loading && <div className="loading-overlay">加载中...</div>}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error-overlay">{error}</div>}
       
       <div className="grid">
         <div className="card">
@@ -109,56 +89,6 @@ const System: React.FC = () => {
           <div className="metric">
             <span className="metric-label">逻辑核心</span>
             <span className="metric-value">{cpuUsage?.cpu_count.logical || 0}</span>
-          </div>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={cpuChartData} 
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <defs>
-                  <linearGradient id="cpuGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3498db" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3498db" stopOpacity={0.2}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 12, fill: '#666' }} 
-                  axisLine={{ stroke: '#ddd' }} 
-                  tickLine={{ stroke: '#ddd' }}
-                />
-                <YAxis 
-                  domain={[0, 100]} 
-                  tick={{ fontSize: 12, fill: '#666' }} 
-                  axisLine={{ stroke: '#ddd' }} 
-                  tickLine={{ stroke: '#ddd' }}
-                  label={{ 
-                    value: '使用率 (%)', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    style: { textAnchor: 'middle', fontSize: 12, fill: '#666' }
-                  }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                    borderRadius: '8px', 
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                    border: '1px solid #e0e0e0'
-                  }} 
-                  formatter={(value) => [`${value}%`, 'CPU使用率']}
-                  labelStyle={{ fontWeight: 'bold', color: '#333' }}
-                />
-                <Bar 
-                  dataKey="使用率" 
-                  fill="url(#cpuGradient)" 
-                  radius={[4, 4, 0, 0]} 
-                  barSize={30}
-                />
-              </BarChart>
-            </ResponsiveContainer>
           </div>
         </div>
 
@@ -176,94 +106,10 @@ const System: React.FC = () => {
             <span className="metric-label">可用内存</span>
             <span className="metric-value">{((memoryUsage?.memory.available || 0) / (1024 * 1024 * 1024)).toFixed(2)} GB</span>
           </div>
-          <div className="metric">
-            <span className="metric-label">内存使用率</span>
-            <span className="metric-value">{memoryUsage?.memory.percent || 0}%</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">Swap 总量</span>
-            <span className="metric-value">{((memoryUsage?.swap.total || 0) / (1024 * 1024 * 1024)).toFixed(2)} GB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">Swap 使用率</span>
-            <span className="metric-value">{memoryUsage?.swap.percent || 0}%</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2>磁盘使用情况</h2>
-        <div className="chart-container">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={diskChartData} 
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <defs>
-                <linearGradient id="diskGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#2ecc71" stopOpacity={0.2}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 12, fill: '#666' }} 
-                axisLine={{ stroke: '#ddd' }} 
-                tickLine={{ stroke: '#ddd' }}
-              />
-              <YAxis 
-                domain={[0, 100]} 
-                tick={{ fontSize: 12, fill: '#666' }} 
-                axisLine={{ stroke: '#ddd' }} 
-                tickLine={{ stroke: '#ddd' }}
-                label={{ 
-                  value: '使用率 (%)', 
-                  angle: -90, 
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle', fontSize: 12, fill: '#666' }
-                }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                  borderRadius: '8px', 
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                  border: '1px solid #e0e0e0'
-                }} 
-                formatter={(value) => [`${value}%`, '磁盘使用率']}
-                labelStyle={{ fontWeight: 'bold', color: '#333' }}
-              />
-              <Bar 
-                dataKey="使用率" 
-                fill="url(#diskGradient)" 
-                radius={[4, 4, 0, 0]} 
-                barSize={30}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div style={{ marginTop: '20px' }}>
-          {diskUsage.map((disk) => (
-            <div key={disk.mountpoint} className="metric">
-              <div>
-                <div className="metric-label">{disk.mountpoint}</div>
-                <div style={{ fontSize: '0.8rem', color: '#999' }}>{disk.device} ({disk.fstype})</div>
-              </div>
-              <div>
-                <div className="metric-value">{disk.percent}%</div>
-                <div style={{ fontSize: '0.8rem', color: '#999' }}>
-                  {(disk.used / (1024 * 1024 * 1024)).toFixed(2)} GB / {(disk.total / (1024 * 1024 * 1024)).toFixed(2)} GB
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
   )
 }
 
-// 使用React.memo包装System组件，避免不必要的重新渲染
-export default React.memo(System)
+export default System

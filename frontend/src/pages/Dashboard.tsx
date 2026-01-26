@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import api from '../utils/api'
 import SystemStatusCard from '../components/SystemStatusCard'
 import CPUUsageCard from '../components/CPUUsageCard'
 import MemoryUsageCard from '../components/MemoryUsageCard'
 import NetworkTrafficCard from '../components/NetworkTrafficCard'
+import { withRenderDebug } from '../utils/debug-render'
 
 interface SystemStatus {
   hostname: string
@@ -49,7 +50,7 @@ interface NetworkTraffic {
   dropout: number
 }
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC = React.memo(() => {
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null)
   const [cpuUsage, setCpuUsage] = useState<CPUUsage | null>(null)
   const [memoryUsage, setMemoryUsage] = useState<MemoryUsage | null>(null)
@@ -57,13 +58,46 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 数据比较函数，用于判断数据是否真正变化
+  // 使用更高效的深度比较，避免不必要的JSON.stringify
+  const dataChanged = useMemo(() => {
+    const deepCompare = (a: any, b: any): boolean => {
+      if (a === b) return false
+      
+      if (typeof a !== typeof b) return true
+      
+      if (typeof a !== 'object' || a === null || b === null) return a !== b
+      
+      if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return true
+        for (let i = 0; i < a.length; i++) {
+          if (deepCompare(a[i], b[i])) return true
+        }
+        return false
+      }
+      
+      const keysA = Object.keys(a)
+      const keysB = Object.keys(b)
+      if (keysA.length !== keysB.length) return true
+      
+      for (const key of keysA) {
+        if (!keysB.includes(key)) return true
+        if (deepCompare(a[key], b[key])) return true
+      }
+      
+      return false
+    }
+    
+    return deepCompare
+  }, [])
+
   const fetchData = async () => {
     try {
       // 只有在初始加载且没有任何数据时才显示loading
-      const isInitialLoad = !systemStatus && !cpuUsage && !memoryUsage && !networkTraffic
-      if (isInitialLoad) {
+      if (!systemStatus && !cpuUsage && !memoryUsage && !networkTraffic) {
         setLoading(true)
       }
+      
       const [systemRes, cpuRes, memoryRes, networkRes] = await Promise.all([
         api.get('/api/system/status'),
         api.get('/api/system/cpu'),
@@ -71,19 +105,32 @@ const Dashboard: React.FC = () => {
         api.get('/api/network/traffic')
       ])
       
-      // 使用函数式更新，避免直接依赖外部状态
-      setSystemStatus(prev => systemRes.data)
-      setCpuUsage(prev => cpuRes.data)
-      setMemoryUsage(prev => memoryRes.data)
-      setNetworkTraffic(prev => networkRes.data)
-      setError(null)
+      // 只有当数据真正变化时才更新状态，避免不必要的重新渲染
+      if (dataChanged(systemStatus, systemRes.data)) {
+        setSystemStatus(systemRes.data)
+      }
+      if (dataChanged(cpuUsage, cpuRes.data)) {
+        setCpuUsage(cpuRes.data)
+      }
+      if (dataChanged(memoryUsage, memoryRes.data)) {
+        setMemoryUsage(memoryRes.data)
+      }
+      if (dataChanged(networkTraffic, networkRes.data)) {
+        setNetworkTraffic(networkRes.data)
+      }
+      
+      // 只有在有错误时才设置error，否则保持null
+      if (error) {
+        setError(null)
+      }
     } catch (err) {
       setError('获取数据失败，请检查后端服务是否正常运行')
       console.error(err)
     } finally {
-      // 无论如何，初始加载完成后都要关闭loading
-      // 不依赖闭包中的loading值，确保后续刷新不会显示loading
-      setLoading(false)
+      // 只有在初始加载时才设置loading为false
+      if (loading) {
+        setLoading(false)
+      }
     }
   }
 
@@ -93,20 +140,24 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval)
   }, [])
 
+  // 准备CPU图表数据
+  const cpuChartData = cpuUsage?.per_core_usage ? cpuUsage.per_core_usage.map((usage, index) => ({
+    name: `核心 ${index + 1}`,
+    使用率: usage
+  })) : []
+
   return (
     <div>
-      {loading && <div className="loading-overlay">加载中...</div>}
       {error && <div className="error-overlay">{error}</div>}
       
       <div className="grid">
-        <SystemStatusCard systemStatus={systemStatus} />
-        <CPUUsageCard cpuUsage={cpuUsage} />
-        <MemoryUsageCard memoryUsage={memoryUsage} />
-        <NetworkTrafficCard networkTraffic={networkTraffic} />
+        <SystemStatusCard data={systemStatus} />
+        <CPUUsageCard data={cpuUsage} cpuChartData={cpuChartData} />
+        <MemoryUsageCard data={memoryUsage} />
+        <NetworkTrafficCard data={networkTraffic} />
       </div>
     </div>
   )
-}
+})
 
-// 使用React.memo包装Dashboard组件，避免不必要的重新渲染
-export default React.memo(Dashboard)
+export default Dashboard
