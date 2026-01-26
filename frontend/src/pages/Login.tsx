@@ -15,9 +15,16 @@ const Login: React.FC = () => {
     setError(null)
 
     try {
+      console.log('=== 开始登录 ===')
+      console.log('用户名:', username)
+      console.log('密码:', password)
+      
       const params = new URLSearchParams()
       params.append('username', username)
       params.append('password', password)
+      
+      console.log('请求参数:', params.toString())
+      console.log('请求URL:', '/api/auth/login')
       
       const response = await api.post('/api/auth/login', params, {
         headers: {
@@ -25,14 +32,21 @@ const Login: React.FC = () => {
         }
       })
 
+      console.log('登录成功，响应数据:', response.data)
+      
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token)
         localStorage.setItem('username', username)
+        console.log('Token已保存，准备跳转到首页')
         navigate('/')
       }
     } catch (err: any) {
+      console.error('登录失败，完整错误信息:', err)
+      console.error('错误响应:', err.response)
+      console.error('错误状态码:', err.response?.status)
+      console.error('错误详情:', err.response?.data)
+      
       setError(err.response?.data?.detail || '登录失败，请检查用户名和密码')
-      console.error('Login error:', err)
     } finally {
       setLoading(false)
     }

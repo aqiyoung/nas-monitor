@@ -34,22 +34,45 @@ def get_user(username: str):
 
 # 验证用户
 def authenticate_user(username: str, password: str):
+    print(f"=== 开始认证用户: {username} ===")
     user = storage.get_user(username)
+    print(f"获取用户结果: {user}")
+    
     if not user:
+        print(f"用户不存在: {username}")
         return False
-    # 添加调试日志
-    print(f"Authenticating user: {username}")
-    print(f"Password: {password}")
-    print(f"Hashed password: {user.hashed_password}")
-    # 临时允许使用默认密码 "password" 登录，无论哈希值是什么
+    
+    # 调试信息
+    print(f"用户名: {username}")
+    print(f"密码: {password}")
+    print(f"哈希密码: {user.hashed_password}")
+    print(f"用户是否禁用: {user.disabled}")
+    
+    # 检查用户是否被禁用
+    if user.disabled:
+        print(f"用户已禁用: {username}")
+        return False
+    
+    # 使用默认密码登录（用于测试）
     if password == "password" and username == "admin":
-        print("Using default password for admin user")
+        print("使用默认密码绕过验证")
         return user.dict()
-    if not verify_password(password, user.hashed_password):
-        print(f"Password verification failed for user: {username}")
+    
+    # 验证密码
+    print("开始密码验证...")
+    try:
+        is_valid = verify_password(password, user.hashed_password)
+        print(f"密码验证结果: {is_valid}")
+        
+        if not is_valid:
+            print(f"密码验证失败 for user: {username}")
+            return False
+        
+        print(f"密码验证成功 for user: {username}")
+        return user.dict()
+    except Exception as e:
+        print(f"密码验证过程中发生错误: {e}")
         return False
-    print(f"Password verification successful for user: {username}")
-    return user.dict()
 
 # 创建访问令牌
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
