@@ -1,5 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import api from '../utils/api'
+import SystemStatusCard from '../components/SystemStatusCard'
+import CPUUsageCard from '../components/CPUUsageCard'
+import MemoryUsageCard from '../components/MemoryUsageCard'
+import NetworkTrafficCard from '../components/NetworkTrafficCard'
+import { withRenderDebug } from '../utils/debug-render'
 
 interface SystemStatus {
   hostname: string
@@ -54,14 +59,37 @@ const Dashboard: React.FC = React.memo(() => {
   const [error, setError] = useState<string | null>(null)
 
   // 数据比较函数，用于判断数据是否真正变化
-  const dataChanged = (oldData: any, newData: any): boolean => {
-    if (oldData === null || newData === null) {
-      return oldData !== newData
+  // 使用更高效的深度比较，避免不必要的JSON.stringify
+  const dataChanged = useMemo(() => {
+    const deepCompare = (a: any, b: any): boolean => {
+      if (a === b) return false
+      
+      if (typeof a !== typeof b) return true
+      
+      if (typeof a !== 'object' || a === null || b === null) return a !== b
+      
+      if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return true
+        for (let i = 0; i < a.length; i++) {
+          if (deepCompare(a[i], b[i])) return true
+        }
+        return false
+      }
+      
+      const keysA = Object.keys(a)
+      const keysB = Object.keys(b)
+      if (keysA.length !== keysB.length) return true
+      
+      for (const key of keysA) {
+        if (!keysB.includes(key)) return true
+        if (deepCompare(a[key], b[key])) return true
+      }
+      
+      return false
     }
     
-    // 对于对象，比较其JSON字符串
-    return JSON.stringify(oldData) !== JSON.stringify(newData)
-  }
+    return deepCompare
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -112,103 +140,21 @@ const Dashboard: React.FC = React.memo(() => {
     return () => clearInterval(interval)
   }, [])
 
+  // 准备CPU图表数据
+  const cpuChartData = cpuUsage?.per_core_usage ? cpuUsage.per_core_usage.map((usage, index) => ({
+    name: `核心 ${index + 1}`,
+    使用率: usage
+  })) : []
+
   return (
     <div>
-      {loading && <div className="loading-overlay">加载中...</div>}
       {error && <div className="error-overlay">{error}</div>}
       
       <div className="grid">
-        <div className="card">
-          <h2>系统状态</h2>
-          <div className="metric">
-            <span className="metric-label">主机名</span>
-            <span className="metric-value">{systemStatus?.hostname || '-'}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">操作系统</span>
-            <span className="metric-value">{systemStatus?.os || '-'} {systemStatus?.os_version || ''}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">架构</span>
-            <span className="metric-value">{systemStatus?.architecture || '-'}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">启动时间</span>
-            <span className="metric-value">{systemStatus?.boot_time || '-'}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">运行时间</span>
-            <span className="metric-value">{systemStatus?.uptime || '-'}</span>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>CPU 使用情况</h2>
-          <div className="metric">
-            <span className="metric-label">总使用率</span>
-            <span className="metric-value">{cpuUsage?.total_usage || 0}%</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">物理核心</span>
-            <span className="metric-value">{cpuUsage?.cpu_count.physical || 0}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">逻辑核心</span>
-            <span className="metric-value">{cpuUsage?.cpu_count.logical || 0}</span>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>内存使用情况</h2>
-          <div className="metric">
-            <span className="metric-label">内存使用率</span>
-            <span className="metric-value">{memoryUsage?.memory.percent || 0}%</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">已用内存</span>
-            <span className="metric-value">{((memoryUsage?.memory.used || 0) / (1024 * 1024 * 1024)).toFixed(2)} GB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">可用内存</span>
-            <span className="metric-value">{((memoryUsage?.memory.available || 0) / (1024 * 1024 * 1024)).toFixed(2)} GB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">内存总量</span>
-            <span className="metric-value">{((memoryUsage?.memory.total || 0) / (1024 * 1024 * 1024)).toFixed(2)} GB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">Swap 使用率</span>
-            <span className="metric-value">{memoryUsage?.swap.percent || 0}%</span>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>网络流量</h2>
-          <div className="metric">
-            <span className="metric-label">发送字节数</span>
-            <span className="metric-value">{((networkTraffic?.bytes_sent || 0) / (1024 * 1024)).toFixed(2)} MB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">接收字节数</span>
-            <span className="metric-value">{((networkTraffic?.bytes_recv || 0) / (1024 * 1024)).toFixed(2)} MB</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">发送数据包</span>
-            <span className="metric-value">{networkTraffic?.packets_sent || 0}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">接收数据包</span>
-            <span className="metric-value">{networkTraffic?.packets_recv || 0}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">错误输入</span>
-            <span className="metric-value">{networkTraffic?.errin || 0}</span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">错误输出</span>
-            <span className="metric-value">{networkTraffic?.errout || 0}</span>
-          </div>
-        </div>
+        <SystemStatusCard data={systemStatus} />
+        <CPUUsageCard data={cpuUsage} cpuChartData={cpuChartData} />
+        <MemoryUsageCard data={memoryUsage} />
+        <NetworkTrafficCard data={networkTraffic} />
       </div>
     </div>
   )

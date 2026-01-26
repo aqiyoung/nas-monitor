@@ -18,10 +18,8 @@ body {
 }
 
 .app-wrapper {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   min-height: 100vh;
-  background-attachment: fixed;
-  background-size: cover;
   width: 100%;
 }
 
@@ -40,9 +38,7 @@ code {
   width: 100%;
   padding: 20px 15px;
   margin: 0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  background-attachment: fixed;
-  background-size: cover;
+  background: #f8f9fa;
   min-height: calc(100vh - 120px);
 }
 
@@ -54,7 +50,7 @@ code {
 }
 
 .header {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: #ffffff;
   color: #333333;
   padding: 1rem 2rem;
   margin: 0;
@@ -66,16 +62,7 @@ code {
   flex-wrap: wrap;
   gap: 1rem;
   width: 100%;
-  border-bottom: 2px solid transparent;
-  border-image: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-  border-image-slice: 1;
-  position: relative;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.header:hover {
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 /* 头部内容区域 */
@@ -84,7 +71,6 @@ code {
   flex-direction: row;
   align-items: center;
   gap: 1rem;
-  animation: fadeInLeft 0.6s ease-out;
 }
 
 /* 平台描述样式 */
@@ -95,7 +81,6 @@ code {
   margin: 0;
   padding: 0;
   line-height: 1.5;
-  animation: fadeInLeft 0.6s ease-out 0.2s both;
 }
 
 .header h1 {
@@ -103,11 +88,6 @@ code {
   font-weight: 700;
   margin: 0;
   color: #333333;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: fadeInLeft 0.6s ease-out 0.1s both;
 }
 
 .nav {
@@ -115,7 +95,6 @@ code {
   gap: 0.5rem;
   margin-top: 0;
   flex-wrap: wrap;
-  animation: fadeInRight 0.6s ease-out 0.3s both;
 }
 
 .nav a {
@@ -123,100 +102,36 @@ code {
   text-decoration: none;
   padding: 0.75rem 1.5rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
+  background: #ffffff;
   font-weight: 500;
   border: 1px solid #e0e0e0;
-  position: relative;
-  backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-
-.nav a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.nav a:hover {
-  color: #0066cc;
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.15);
-  border-color: #4facfe;
-}
-
-.nav a:hover::before {
-  left: 100%;
 }
 
 .nav a.active {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: #0066cc;
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
 }
 
 .nav a.active:hover {
-  background: linear-gradient(135deg, #3a94e5 0%, #00d4fe 100%);
+  background: #0052a3;
   border-color: transparent;
-  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 102, 204, 0.5);
 }
 
 .card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: #ffffff;
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
   border: 1px solid #e0e0e0;
   position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-}
 
-.card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  transform: translate(40%, -40%);
-  transition: all 0.3s ease;
-  opacity: 1;
-}
-
-.card:hover {
-  box-shadow: 0 12px 40px rgba(0, 102, 204, 0.2);
-  border-color: #4facfe;
-  transform: translateY(-2px);
-}
-
-.card:hover::after {
-  transform: translate(30%, -30%) scale(1.2);
-  opacity: 0.8;
-}
 
 .card h2 {
   font-size: 1.45rem;
@@ -227,15 +142,6 @@ code {
   align-items: center;
   gap: 12px;
   position: relative;
-}
-
-.card h2::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 28px;
-  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 2px;
 }
 
 .grid {
@@ -250,61 +156,24 @@ code {
   align-items: center;
   padding: 16px 0;
   border-bottom: 1px solid #e0e0e0;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.metric::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-  transition: width 0.3s ease;
 }
 
 .metric:last-child {
   border-bottom: none;
 }
 
-.metric:hover {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%);
-  padding-left: 12px;
-  border-radius: 8px;
-  transform: translateX(4px);
-}
 
-.metric:hover::after {
-  width: 100%;
-}
 
 .metric-label {
   font-size: 0.95rem;
   color: #666666;
   font-weight: 500;
-  position: relative;
-  transition: all 0.3s ease;
 }
 
 .metric-value {
   font-size: 1.35rem;
   font-weight: 700;
   color: #333333;
-  position: relative;
-  transition: all 0.3s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.metric:hover .metric-label {
-  color: #0066cc;
-  font-weight: 600;
-}
-
-.metric:hover .metric-value {
-  color: #4facfe;
-  text-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
 }
 
 /* 状态指示器 */
@@ -334,31 +203,15 @@ code {
 .chart-container {
   height: 320px;
   margin-top: 25px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: #ffffff;
   border-radius: 12px;
   padding: 24px;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e0e0e0;
-  transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
 }
 
-.chart-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-}
 
-.chart-container:hover {
-  border-color: #4facfe;
-  box-shadow: inset 0 3px 12px rgba(0, 102, 204, 0.15);
-  transform: scale(1.01);
-}
 
 /* 响应式图表 */
 @media (max-width: 768px) {
@@ -424,7 +277,6 @@ code {
   height: 100%;
   background: #0066cc;
   border-radius: 4px;
-  transition: width 0.3s ease;
   position: relative;
 }
 
@@ -538,149 +390,26 @@ code {
   }
 }
 
-/* 浮动动画变体 - 增强差异性 */
-@keyframes float1 {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  20% { transform: translateY(-30px) translateX(25px) rotate(10deg); }
-  40% { transform: translateY(-60px) translateX(10px) rotate(20deg); }
-  60% { transform: translateY(-40px) translateX(-20px) rotate(30deg); }
-  80% { transform: translateY(-20px) translateX(-10px) rotate(20deg); }
-  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-}
 
-@keyframes float2 {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  25% { transform: translateY(-25px) translateX(-20px) rotate(-15deg); }
-  50% { transform: translateY(-55px) translateX(0px) rotate(-30deg); }
-  75% { transform: translateY(-35px) translateX(25px) rotate(-15deg); }
-  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-}
 
-@keyframes float3 {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  20% { transform: translateY(-40px) translateX(15px) rotate(15deg); }
-  40% { transform: translateY(-25px) translateX(25px) rotate(30deg); }
-  60% { transform: translateY(-65px) translateX(0px) rotate(15deg); }
-  80% { transform: translateY(-40px) translateX(-20px) rotate(0deg); }
-  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-}
 
-@keyframes float4 {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  30% { transform: translateY(-35px) translateX(-25px) rotate(-20deg); }
-  60% { transform: translateY(-60px) translateX(10px) rotate(10deg); }
-  90% { transform: translateY(-25px) translateX(20px) rotate(30deg); }
-  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-}
-
-@keyframes float5 {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  25% { transform: translateY(-20px) translateX(20px) rotate(25deg); }
-  50% { transform: translateY(-50px) translateX(-10px) rotate(-15deg); }
-  75% { transform: translateY(-35px) translateX(25px) rotate(10deg); }
-  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-}
-
-/* 背景装饰圆样式 */
-.background-circle {
-  position: absolute;
-  border-radius: 50%;
-  z-index: 0;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-/* 随机动画类 */
-.animate-random-1 { animation: float1 20s ease-in-out infinite; }
-.animate-random-2 { animation: float2 25s ease-in-out infinite reverse; }
-.animate-random-3 { animation: float3 15s ease-in-out infinite; }
-.animate-random-4 { animation: float4 18s ease-in-out infinite reverse; }
-.animate-random-5 { animation: float5 30s ease-in-out infinite; }
-
-/* 基础背景圆样式 */
-.background-circle-1 {
-  top: 10%;
-  left: 5%;
-  width: 250px;
-  height: 250px;
-  background: rgba(0, 102, 204, 0.08);
-}
-
-.background-circle-2 {
-  bottom: 5%;
-  right: 8%;
-  width: 350px;
-  height: 350px;
-  background: rgba(0, 102, 204, 0.06);
-}
-
-.background-circle-3 {
-  top: 25%;
-  right: 20%;
-  width: 120px;
-  height: 120px;
-  background: rgba(250, 112, 154, 0.08);
-}
-
-.background-circle-4 {
-  bottom: 20%;
-  left: 15%;
-  width: 150px;
-  height: 150px;
-  background: rgba(102, 126, 234, 0.08);
-}
-
-.background-circle-5 {
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 400px;
-  height: 400px;
-  background: rgba(74, 144, 226, 0.05);
-}
-
-.card {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-.card:nth-child(6) { animation-delay: 0.6s; }
 
 /* 数值颜色区分 */
 .metric-value.high {
   color: #ff6b6b;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  text-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
 }
 
 .metric-value.medium {
   color: #ffc107;
-  background: linear-gradient(135deg, #ffc107 0%, #fd79a8 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  text-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
 }
 
 .metric-value.low {
   color: #51cf66;
-  background: linear-gradient(135deg, #51cf66 0%, #00d4ff 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  text-shadow: 0 0 15px rgba(81, 207, 102, 0.3);
 }
 
 /* 网络流量卡片 */
 .network-card {
-  background: linear-gradient(135deg, rgba(250, 112, 154, 0.3), rgba(255, 105, 180, 0.3)) !important;
+  background: rgba(250, 112, 154, 0.3) !important;
   color: white !important;
   border-color: rgba(250, 112, 154, 0.5) !important;
 }
@@ -695,15 +424,11 @@ code {
 
 .network-card .metric-value {
   color: white !important;
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
 }
 
 /* Docker容器卡片 */
 .docker-card {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3)) !important;
+  background: rgba(102, 126, 234, 0.3) !important;
   color: white !important;
   border-color: rgba(102, 126, 234, 0.5) !important;
 }
@@ -718,10 +443,6 @@ code {
 
 .docker-card .metric-value {
   color: white !important;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
 }
 
 /* 容器状态标签 */
@@ -732,9 +453,7 @@ code {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  backdrop-filter: blur(5px);
   border: 1px solid transparent;
-  transition: all 0.3s ease;
 }
 
 .container-status.running {
@@ -758,11 +477,6 @@ code {
   box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
 }
 
-.container-status:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
 /* 图表样式增强 */
 .recharts-cartesian-axis-tick-value {
   font-size: 0.85rem;
@@ -770,81 +484,17 @@ code {
   color: #b0b0b0;
 }
 
-.recharts-tooltip-wrapper {
-  background: rgba(26, 26, 46, 0.9) !important;
-  backdrop-filter: blur(10px) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(74, 144, 226, 0.5) !important;
-  color: #e0e0e0 !important;
-}
-
-.recharts-tooltip-item {
-  color: #b0b0b0 !important;
-}
-
-.recharts-bar-rect {
-  transition: all 0.3s ease !important;
-  border-radius: 4px !important;
-}
-
-.recharts-bar-rect:hover {
-  fill: #4facfe !important;
-  transform: scale(1.05) !important;
-  box-shadow: 0 0 20px rgba(74, 144, 226, 0.5) !important;
-}
-
-.recharts-line-path {
-  stroke-width: 3px !important;
-  stroke: url(#techGradient) !important;
-}
-
-.recharts-area {
-  fill: url(#techGradientArea) !important;
-  opacity: 0.3 !important;
-}
-
-.recharts-cartesian-grid {
-  stroke: rgba(74, 144, 226, 0.2) !important;
-}
-
-.recharts-cartesian-axis-line {
-  stroke: rgba(74, 144, 226, 0.3) !important;
-}
-
-.recharts-cartesian-axis-tick-line {
-  stroke: rgba(74, 144, 226, 0.3) !important;
-}
-
 /* 标题样式 */
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
   margin: 40px 0 30px;
-  color: #e0e0e0;
+  color: #333333;
   text-align: center;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 8px 32px rgba(74, 144, 226, 0.4);
   letter-spacing: 0.5px;
   position: relative;
   display: inline-block;
   width: 100%;
-}
-
-.page-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 2px;
-  box-shadow: 0 2px 10px rgba(74, 144, 226, 0.3);
 }
 
 /* 容器列表卡片 */
@@ -857,18 +507,10 @@ code {
 
 .container-item {
   background: rgba(26, 26, 46, 0.7);
-  backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 20px;
-  transition: all 0.3s ease;
   border: 1px solid rgba(74, 144, 226, 0.3);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.container-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(74, 144, 226, 0.3);
-  border-color: rgba(74, 144, 226, 0.6);
 }
 
 /* 镜像列表卡片 */
@@ -881,18 +523,10 @@ code {
 
 .image-item {
   background: rgba(26, 26, 46, 0.7);
-  backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 20px;
-  transition: all 0.3s ease;
   border: 1px solid rgba(74, 144, 226, 0.3);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.image-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(74, 144, 226, 0.3);
-  border-color: rgba(74, 144, 226, 0.6);
 }
 
 /* 响应式容器 */
@@ -919,10 +553,8 @@ code {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   text-decoration: none;
   text-align: center;
-  position: relative;
 }
 
 .btn-primary {
@@ -973,13 +605,6 @@ code {
   background: #e0e0e0;
   color: #333333;
   border: 1px solid #cccccc;
-  transition: all 0.2s ease;
-}
-
-.tag:hover {
-  background: #cccccc;
-  border-color: #bbbbbb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* 分隔线 */

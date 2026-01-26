@@ -95,7 +95,6 @@ const IO: React.FC = () => {
 
   return (
     <div>
-      {loading && <div className="loading-overlay">加载中...</div>}
       {error && <div className="error-overlay">{error}</div>}
       
       <div className="grid">

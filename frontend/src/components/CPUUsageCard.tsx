@@ -40,15 +40,8 @@ const CPUUsageCard: React.FC<CPUUsageCardProps> = React.memo(({ data, cpuChartDa
           <BarChart 
             data={cpuChartData} 
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }} 
-            animationDuration={1500} 
-            animationEasing="ease-in-out"
+            animationDuration={0}
           >
-            <defs>
-              <linearGradient id="cpuGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3498db" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#3498db" stopOpacity={0.2}/>
-              </linearGradient>
-            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
             <XAxis 
               dataKey="name" 
@@ -80,12 +73,10 @@ const CPUUsageCard: React.FC<CPUUsageCardProps> = React.memo(({ data, cpuChartDa
             />
             <Bar 
               dataKey="使用率" 
-              fill="url(#cpuGradient)" 
+              fill="#3498db" 
               radius={[4, 4, 0, 0]} 
               barSize={30}
-              animationDuration={1500}
-              animationEasing="ease-in-out"
-              hoverFill="#2980b9"
+              animationDuration={0}
             />
           </BarChart>
         </ResponsiveContainer>
