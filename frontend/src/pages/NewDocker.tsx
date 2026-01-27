@@ -302,8 +302,18 @@ const NewDocker: React.FC = () => {
       setStats(prev => statsRes.data || [])
       setImages(prev => imagesRes.data || [])
       setError(null)
-    } catch (err) {
-      setError('获取 Docker 数据失败：Docker 服务可能未运行或未安装')
+    } catch (err: any) {
+      let errorMessage = '获取 Docker 数据失败：'
+      if (err.response?.status === 500) {
+        errorMessage += 'Docker 服务可能未运行或未安装'
+      } else if (err.response?.status === 404) {
+        errorMessage += 'API 端点不存在'
+      } else if (err.message?.includes('Network Error')) {
+        errorMessage += '网络连接失败，请检查后端服务是否正常运行'
+      } else {
+        errorMessage += '未知错误'
+      }
+      setError(errorMessage)
       console.error('Docker API Error:', err)
       // 发生错误时，将数据重置为空数组，确保页面能正常显示
       setContainers([])
@@ -365,7 +375,26 @@ const NewDocker: React.FC = () => {
   return (
     <div>
       {loading && <div className="loading-overlay">加载中...</div>}
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {error}
+          <button
+            onClick={fetchData}
+            style={{
+              marginLeft: '15px',
+              padding: '8px 16px',
+              backgroundColor: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            刷新
+          </button>
+        </div>
+      )}
       
       {/* 动态数据展示，使用React.memo优化，只在数据变化时更新 */}
       <div className="grid">
