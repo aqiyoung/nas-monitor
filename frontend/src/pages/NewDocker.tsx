@@ -290,6 +290,8 @@ const NewDocker: React.FC = () => {
   }, [stats])
 
   const fetchData = async () => {
+    // 每次刷新时都显示加载状态
+    setLoading(true)
     try {
       const [containersRes, statsRes, imagesRes] = await Promise.all([
         api.get('/docker/containers'),
@@ -303,6 +305,12 @@ const NewDocker: React.FC = () => {
       setImages(prev => imagesRes.data || [])
       setError(null)
     } catch (err: any) {
+      // 检查是否已经跳转到登录页面
+      if (!localStorage.getItem('token')) {
+        // 已经跳转到登录页面，不需要显示错误信息
+        return
+      }
+      
       let errorMessage = '获取 Docker 数据失败：'
       if (err.response?.status === 500) {
         errorMessage += 'Docker 服务可能未运行或未安装'
@@ -320,10 +328,8 @@ const NewDocker: React.FC = () => {
       setStats([])
       setImages([])
     } finally {
-      // 初始加载完成后关闭loading，后续刷新不再显示
-      if (loading) {
-        setLoading(false)
-      }
+      // 无论成功失败，都关闭loading状态
+      setLoading(false)
     }
   }
 
