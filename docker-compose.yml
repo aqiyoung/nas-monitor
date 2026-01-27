@@ -28,7 +28,7 @@ services:
       - backend
     environment:
       - TZ=Asia/Shanghai
-      - API_BASE_URL=http://backend:8017  # 后端服务地址，可根据实际情况修改
+      - VITE_API_BASE_URL=http://backend:8017  # 后端服务地址，可根据实际情况修改
     restart: unless-stopped
     # 使用root用户运行nginx容器，确保它能够访问文件
     user: "root:root"
