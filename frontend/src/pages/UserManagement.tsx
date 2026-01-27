@@ -23,7 +23,7 @@ const UserManagement: React.FC = () => {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/user/', {
+      const response = await fetch('/user/', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,23 +78,23 @@ const UserManagement: React.FC = () => {
 
       if (editingUser) {
         // 更新用户
-        response = await fetch(`/api/user/${editingUser.username}`, {
+        response = await fetch(`/user/${editingUser.username}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(values)
+          body: JSON.stringify(userData)
         })
       } else {
         // 创建用户
-        response = await fetch('/api/user/', {
+        response = await fetch('/user/', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(values)
+          body: JSON.stringify(userData)
         })
       }
 
@@ -117,7 +117,7 @@ const UserManagement: React.FC = () => {
   const handleDelete = async (username: string) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/user/${username}`, {
+      const response = await fetch(`/user/${username}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

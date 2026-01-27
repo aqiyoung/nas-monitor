@@ -99,10 +99,10 @@ const Dashboard: React.FC = React.memo(() => {
       }
       
       const [systemRes, cpuRes, memoryRes, networkRes] = await Promise.all([
-        api.get('/api/system/status'),
-        api.get('/api/system/cpu'),
-        api.get('/api/system/memory'),
-        api.get('/api/network/traffic')
+        api.get('/system/status'),
+        api.get('/system/cpu'),
+        api.get('/system/memory'),
+        api.get('/network/traffic')
       ])
       
       // 只有当数据真正变化时才更新状态，避免不必要的重新渲染

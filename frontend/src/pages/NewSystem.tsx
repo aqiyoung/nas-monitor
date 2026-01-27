@@ -170,9 +170,9 @@ const NewSystem: React.FC = () => {
   const fetchData = async () => {
     try {
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
-        api.get('/api/system/cpu'),
-        api.get('/api/system/memory'),
-        api.get('/api/system/disk')
+        api.get('/system/cpu'),
+        api.get('/system/memory'),
+        api.get('/system/disk')
       ])
       
       // 只更新数据状态，不影响容器渲染

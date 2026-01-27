@@ -53,8 +53,8 @@ const IO: React.FC = () => {
       }
       
       const [diskRes, systemRes] = await Promise.all([
-        api.get('/api/io/disk'),
-        api.get('/api/io/system')
+        api.get('/io/disk'),
+        api.get('/io/system')
       ])
       
       // 只有当数据真正变化时才更新状态，避免不必要的重新渲染

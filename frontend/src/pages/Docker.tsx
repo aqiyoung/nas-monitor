@@ -67,9 +67,9 @@ const Docker: React.FC = () => {
       }
       
       const [containersRes, statsRes, imagesRes] = await Promise.all([
-        api.get('/api/docker/containers'),
-        api.get('/api/docker/stats'),
-        api.get('/api/docker/images')
+        api.get('/docker/containers'),
+        api.get('/docker/stats'),
+        api.get('/docker/images')
       ])
       
       // 只有当数据真正变化时才更新状态，避免不必要的重新渲染
@@ -116,8 +116,8 @@ const Docker: React.FC = () => {
     setIsPulling(true)
     
     try {
-      await api.post('/api/docker/images/pull', {
-        image_name: newImageName
+      await api.post('/docker/images/pull', {
+        image_name: imageName
       })
       
       // 拉取成功，刷新镜像列表

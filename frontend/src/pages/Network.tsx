@@ -58,7 +58,7 @@ const Network: React.FC = () => {
       }
       
       // 分别处理每个请求，确保一个请求失败不会影响另一个
-      const trafficPromise = api.get('/api/network/traffic')
+      const trafficPromise = api.get('/network/traffic')
         .then(res => {
           // 只有当数据真正变化时才更新状态
           if (dataChanged(networkTraffic, res.data)) {
@@ -71,7 +71,7 @@ const Network: React.FC = () => {
           return null
         })
       
-      const interfacesPromise = api.get('/api/network/interfaces')
+      const interfacesPromise = api.get('/network/interfaces')
         .then(res => {
           const newInterfaces = res.data || []
           // 只有当数据真正变化时才更新状态

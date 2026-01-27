@@ -24,9 +24,9 @@ const Login: React.FC = () => {
       params.append('password', password)
       
       console.log('请求参数:', params.toString())
-      console.log('请求URL:', '/api/auth/login')
+      console.log('请求URL:', '/auth/login')
       
-      const response = await api.post('/api/auth/login', params, {
+      const response = await api.post('/auth/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }

@@ -63,13 +63,13 @@ const Alarm: React.FC = () => {
       }
       
       if (activeTab === 'records') {
-        const response = await api.get('/api/alarm/records');
+        const response = await api.get('/alarm/records');
         setAlarmRecords(response.data);
       } else if (activeTab === 'configs') {
-        const response = await api.get('/api/alarm/configs');
+        const response = await api.get('/alarm/configs');
         setAlarmConfigs(response.data);
       } else if (activeTab === 'accessIPs') {
-        const response = await api.get('/api/alarm/access-ips');
+        const response = await api.get('/alarm/access-ips');
         setAccessIPs(response.data);
       }
     } catch (error) {
@@ -81,7 +81,7 @@ const Alarm: React.FC = () => {
 
   const handleStatusUpdate = async (recordId: string, status: string) => {
     try {
-      await api.put(`/api/alarm/records/${recordId}`, { status });
+      await api.put(`/alarm/records/${recordId}`, { status });
       fetchData();
     } catch (error) {
       console.error('Failed to update alarm status:', error);
@@ -90,7 +90,7 @@ const Alarm: React.FC = () => {
 
   const handleConfigToggle = async (configId: string, enabled: boolean) => {
     try {
-      await api.put(`/api/alarm/configs/${configId}`, { enabled });
+      await api.put(`/alarm/configs/${configId}`, { enabled });
       fetchData();
     } catch (error) {
       console.error('Failed to toggle alarm config:', error);
@@ -99,7 +99,7 @@ const Alarm: React.FC = () => {
 
   const handleIPBlacklistToggle = async (ipAddress: string, isBlacklisted: boolean) => {
     try {
-      await api.put(`/api/alarm/access-ips/${ipAddress}`, { is_blacklisted: isBlacklisted });
+      await api.put(`/alarm/access-ips/${ipAddress}`, { is_blacklisted: isBlacklisted });
       fetchData();
     } catch (error) {
       console.error('Failed to toggle IP blacklist:', error);

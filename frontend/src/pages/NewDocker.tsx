@@ -272,9 +272,9 @@ const NewDocker: React.FC = () => {
   const fetchData = async () => {
     try {
       const [containersRes, statsRes, imagesRes] = await Promise.all([
-        api.get('/api/docker/containers'),
-        api.get('/api/docker/stats'),
-        api.get('/api/docker/images')
+        api.get('/docker/containers'),
+        api.get('/docker/stats'),
+        api.get('/docker/images')
       ])
       
       // 只更新数据状态，不影响容器渲染
@@ -312,8 +312,8 @@ const NewDocker: React.FC = () => {
     setIsPulling(true)
     
     try {
-      await api.post('/api/docker/images/pull', {
-        image_name: newImageName
+      await api.post('/docker/images/pull', {
+        image_name: imageName
       })
       
       // 拉取成功，刷新镜像列表

@@ -48,9 +48,9 @@ const System: React.FC = () => {
         setLoading(true)
       }
       const [cpuRes, memoryRes, diskRes] = await Promise.all([
-        api.get('/api/system/cpu'),
-        api.get('/api/system/memory'),
-        api.get('/api/system/disk')
+        api.get('/system/cpu'),
+        api.get('/system/memory'),
+        api.get('/system/disk')
       ])
       setCpuUsage(cpuRes.data)
       setMemoryUsage(memoryRes.data)

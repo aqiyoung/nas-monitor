@@ -149,10 +149,10 @@ const NewDashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       const [systemRes, cpuRes, memoryRes, networkRes] = await Promise.all([
-        api.get('/api/system/status'),
-        api.get('/api/system/cpu'),
-        api.get('/api/system/memory'),
-        api.get('/api/network/traffic')
+        api.get('/system/status'),
+        api.get('/system/cpu'),
+        api.get('/system/memory'),
+        api.get('/network/traffic')
       ])
       
       // 只更新数据状态，不影响容器渲染

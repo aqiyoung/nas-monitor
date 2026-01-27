@@ -169,7 +169,7 @@ const NewNetwork: React.FC = () => {
   const fetchData = async () => {
     try {
       // 分别处理每个请求，确保一个请求失败不会影响另一个
-      const trafficPromise = api.get('/api/network/traffic')
+      const trafficPromise = api.get('/network/traffic')
         .then(res => {
           setNetworkTraffic(prev => res.data)
           return res.data
@@ -179,7 +179,7 @@ const NewNetwork: React.FC = () => {
           return null
         })
       
-      const interfacesPromise = api.get('/api/network/interfaces')
+      const interfacesPromise = api.get('/network/interfaces')
         .then(res => {
           const newInterfaces = res.data || []
           setNetworkInterfaces(prev => newInterfaces)

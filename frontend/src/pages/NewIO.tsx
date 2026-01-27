@@ -146,8 +146,8 @@ const NewIO: React.FC = () => {
   const fetchData = async () => {
     try {
       const [diskRes, systemRes] = await Promise.all([
-        api.get('/api/io/disk'),
-        api.get('/api/io/system')
+        api.get('/io/disk'),
+        api.get('/io/system')
       ])
       
       // 只更新数据状态，不影响容器渲染
