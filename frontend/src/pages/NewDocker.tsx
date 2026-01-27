@@ -137,7 +137,10 @@ const ContainerList: React.FC<{ containers: DockerContainer[] }> = React.memo(({
 })
 
 // 镜像列表展示组件，使用React.memo优化
-const ImageList: React.FC<{ images: DockerImage[] }> = React.memo(({ images }) => {
+const ImageList: React.FC<{ 
+  images: DockerImage[],
+  onDeleteImage: (imageId: string) => void
+}> = React.memo(({ images, onDeleteImage }) => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
       {images.map((image) => (
@@ -165,6 +168,23 @@ const ImageList: React.FC<{ images: DockerImage[] }> = React.memo(({ images }) =
             <span className="metric-value" style={{ fontSize: '0.8rem' }}>
               {new Date(image.created).toLocaleString()}
             </span>
+          </div>
+          <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => onDeleteImage(image.id)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                opacity: 1
+              }}
+            >
+              删除镜像
+            </button>
           </div>
         </div>
       ))}
@@ -328,6 +348,20 @@ const NewDocker: React.FC = () => {
     }
   }
 
+  // 处理删除镜像
+  const handleDeleteImage = async (imageId: string) => {
+    if (window.confirm('确定要删除这个镜像吗？此操作不可恢复。')) {
+      try {
+        await api.delete(`/docker/images/${imageId}`)
+        // 删除成功，刷新镜像列表
+        fetchData()
+      } catch (err: any) {
+        console.error('Delete image error:', err)
+        alert('删除镜像失败：' + (err.response?.data?.detail || '未知错误'))
+      }
+    }
+  }
+
   return (
     <div>
       {loading && <div className="loading-overlay">加载中...</div>}
@@ -374,7 +408,7 @@ const NewDocker: React.FC = () => {
 
       <div className="card">
         <h2>镜像列表</h2>
-        <ImageList images={images} />
+        <ImageList images={images} onDeleteImage={handleDeleteImage} />
       </div>
 
       <div className="card">

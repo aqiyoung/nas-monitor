@@ -145,3 +145,35 @@ def pull_image(image_name):
             "success": False,
             "error": str(e)
         }
+
+def delete_image(image_id):
+    """删除 Docker 镜像"""
+    try:
+        import docker
+        client = docker.from_env()
+        # 删除镜像，force=True 强制删除
+        client.images.remove(image_id, force=True)
+        client.close()
+        return {
+            "success": True,
+            "message": "镜像删除成功"
+        }
+    except ImportError:
+        # 记录错误，但返回失败响应而不是错误对象
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in delete_image: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in delete_image: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }

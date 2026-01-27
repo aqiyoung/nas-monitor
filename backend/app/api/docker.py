@@ -34,3 +34,11 @@ async def pull_docker_image(image_name: str = Body(..., embed=True)):
         return docker_service.pull_image(image_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/images/{image_id}")
+async def delete_docker_image(image_id: str):
+    """删除 Docker 镜像"""
+    try:
+        return docker_service.delete_image(image_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
