@@ -313,7 +313,7 @@ const NewDocker: React.FC = () => {
     
     try {
       await api.post('/docker/images/pull', {
-        image_name: imageName
+        image_name: newImageName
       })
       
       // 拉取成功，刷新镜像列表
