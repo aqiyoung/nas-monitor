@@ -49,7 +49,7 @@ services:
 
   # cAdvisor（容器监控）
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: zcube/cadvisor:latest
     container_name: nas-cadvisor
     network_mode: host
     volumes:
