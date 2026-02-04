@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s  # 抓取间隔
+  evaluation_interval: 15s  # 评估间隔
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+scrape_configs:
+  # 采集Node Exporter的系统监控数据
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # 采集cAdvisor的容器监控数据
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:8080']
+
+  # 采集Prometheus自身的监控数据
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

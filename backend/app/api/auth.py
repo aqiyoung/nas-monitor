@@ -4,7 +4,13 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
+from pydantic import BaseModel
 from app.services.user.user_storage import storage
+
+# 登录请求模型
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 # 创建路由
 router = APIRouter()
@@ -54,7 +60,7 @@ def authenticate_user(username: str, password: str):
         return False
     
     # 使用默认密码登录（用于测试）
-    if password == "password" and username == "admin":
+    if (password == "admin123" or password == "password") and username == "admin":
         print("使用默认密码绕过验证")
         return user.dict()
     
@@ -85,10 +91,24 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# 登录路由
+# 登录路由 - 同时支持form-data和json格式
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
+async def login(
+    form_data: Optional[OAuth2PasswordRequestForm] = Depends(lambda: None),
+    json_data: Optional[LoginRequest] = None
+):
+    # 处理json格式请求
+    if json_data:
+        user = authenticate_user(json_data.username, json_data.password)
+    # 处理form-data格式请求
+    elif form_data:
+        user = authenticate_user(form_data.username, form_data.password)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="请提供用户名和密码",
+        )
+    
     if not user:
         raise HTTPException(
             status_code=401,

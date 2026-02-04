@@ -34,3 +34,11 @@ async def get_disk_usage():
         return system_service.get_disk_usage()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/disk/smart")
+async def get_disk_smart_info():
+    """获取磁盘S.M.A.R.T信息"""
+    try:
+        return system_service.get_disk_smart_info()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

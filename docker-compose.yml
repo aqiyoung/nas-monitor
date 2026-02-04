@@ -1,34 +1,91 @@
+version: '3.8'
+
 services:
+  # 后端FastAPI服务
   backend:
-    image: ghcr.io/aqiyoung/nas-monitor-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nas-monitor-backend
     ports:
       - "8017:8017"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # 用于访问 Docker 守护进程
-      - /proc:/proc:ro  # 用于获取宿主机系统信息
-      - /sys:/sys:ro  # 用于获取宿主机硬件信息
-      - /etc/os-release:/etc/os-release:ro  # 用于获取宿主机OS版本信息
-      - ./backend/data:/app/data  # 单独挂载数据目录，确保用户数据持久化
-    working_dir: /app  # 明确指定工作目录
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      - TZ=Asia/Shanghai
+      - HOST=0.0.0.0
+      - PORT=8017
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-nas_monitor_token}
+      - INFLUXDB_ORG=nas_monitor
+      - INFLUXDB_BUCKET=nas_metrics
+      - PROMETHEUS_URL=http://prometheus:9090
     restart: unless-stopped
-    # 明确禁用健康检查，确保容器能够启动
-    healthcheck:
-      disable: true
-    # 使用镜像内置的启动命令，不使用--reload参数
-    command: uvicorn main:app --host 0.0.0.0 --port 8017
+    depends_on:
+      - influxdb
 
+  # 前端Vue应用
   frontend:
-    image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
+    build:
+      context: ./frontend-vue
+      dockerfile: Dockerfile
+    container_name: nas-monitor-frontend
     ports:
-      - "3003:80"
-    # 不使用挂载，让镜像自己处理构建和部署
+      - "8080:80"
+    restart: unless-stopped
     depends_on:
       - backend
-    environment:
-      - TZ=Asia/Shanghai
-      - VITE_API_BASE_URL=http://backend:8017  # 后端服务地址，可根据实际情况修改
+
+  # Node Exporter（系统监控）
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: nas-node-exporter
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
     restart: unless-stopped
-    # 使用root用户运行nginx容器，确保它能够访问文件
-    user: "root:root"
+
+  # cAdvisor（容器监控）
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: nas-cadvisor
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  # InfluxDB（时序数据存储）
+  influxdb:
+    image: influxdb:2.7
+    container_name: nas-influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=nas_admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=Nas@123456
+      - DOCKER_INFLUXDB_INIT_ORG=nas_monitor
+      - DOCKER_INFLUXDB_INIT_BUCKET=nas_metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=nas_monitor_token
+    restart: unless-stopped
+
+  # Prometheus（监控数据采集和存储）
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nas-prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - ./prometheus/data:/prometheus
+    restart: unless-stopped
+    depends_on:
+      - node-exporter
+      - cadvisor

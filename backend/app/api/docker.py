@@ -42,3 +42,35 @@ async def delete_docker_image(image_id: str):
         return docker_service.delete_image(image_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/containers/{container_id}/start")
+async def start_container(container_id: str):
+    """启动容器"""
+    try:
+        return docker_service.start_container(container_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/containers/{container_id}/stop")
+async def stop_container(container_id: str):
+    """停止容器"""
+    try:
+        return docker_service.stop_container(container_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/containers/{container_id}/restart")
+async def restart_container(container_id: str):
+    """重启容器"""
+    try:
+        return docker_service.restart_container(container_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/containers/{container_id}/logs")
+async def get_container_logs(container_id: str, tail: int = 100):
+    """获取容器日志"""
+    try:
+        return docker_service.get_container_logs(container_id, tail)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

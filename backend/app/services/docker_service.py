@@ -177,3 +177,127 @@ def delete_image(image_id):
             "success": False,
             "error": str(e)
         }
+
+def start_container(container_id):
+    """启动容器"""
+    try:
+        import docker
+        client = docker.from_env()
+        container = client.containers.get(container_id)
+        container.start()
+        client.close()
+        return {
+            "success": True,
+            "message": "容器启动成功"
+        }
+    except ImportError:
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in start_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in start_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+def stop_container(container_id):
+    """停止容器"""
+    try:
+        import docker
+        client = docker.from_env()
+        container = client.containers.get(container_id)
+        container.stop()
+        client.close()
+        return {
+            "success": True,
+            "message": "容器停止成功"
+        }
+    except ImportError:
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in stop_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in stop_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+def restart_container(container_id):
+    """重启容器"""
+    try:
+        import docker
+        client = docker.from_env()
+        container = client.containers.get(container_id)
+        container.restart()
+        client.close()
+        return {
+            "success": True,
+            "message": "容器重启成功"
+        }
+    except ImportError:
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in restart_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in restart_container: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+def get_container_logs(container_id, tail=100):
+    """获取容器日志"""
+    try:
+        import docker
+        client = docker.from_env()
+        container = client.containers.get(container_id)
+        logs = container.logs(tail=tail).decode('utf-8')
+        client.close()
+        return {
+            "success": True,
+            "logs": logs
+        }
+    except ImportError:
+        print("Docker library not installed.")
+        return {
+            "success": False,
+            "error": "Docker library not installed"
+        }
+    except docker.errors.DockerException as e:
+        print(f"Docker API error in get_container_logs: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    except Exception as e:
+        print(f"Unexpected error in get_container_logs: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }

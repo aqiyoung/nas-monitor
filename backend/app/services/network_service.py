@@ -1,5 +1,18 @@
 import psutil
 import platform
+try:
+    import pcap
+except ImportError:
+    print("python-pcap library not installed. Network packet capture will be disabled.")
+    pcap = None
+try:
+    import aiofiles
+except ImportError:
+    print("aiofiles library not installed. Asynchronous file operations will be disabled.")
+    aiofiles = None
+import asyncio
+import time
+import os
 
 def get_wifi_name():
     """获取当前连接的WiFi名称"""
@@ -175,3 +188,89 @@ def get_network_interfaces():
         print(f"Error getting network interfaces: {e}")
     
     return interfaces
+
+async def capture_network_packets(interface=None, duration=60, output_file="network_capture.log"):
+    """捕获网络数据包并异步写入日志"""
+    if pcap is None:
+        return {"error": "python-pcap library not installed"}
+    
+    if aiofiles is None:
+        return {"error": "aiofiles library not installed"}
+    
+    try:
+        # 如果没有指定接口，使用默认接口
+        if not interface:
+            interfaces = psutil.net_if_addrs()
+            # 选择第一个非loopback接口
+            for iface in interfaces:
+                if iface != "lo" and iface != "Loopback":
+                    interface = iface
+                    break
+            if not interface:
+                return {"error": "No network interface found"}
+        
+        # 打开网络接口进行抓包
+        pc = pcap.pcap(interface)
+        
+        # 过滤关键端口（80/443/22/23）
+        pc.setfilter("port 80 or port 443 or port 22 or port 23")
+        
+        # 确保输出目录存在
+        os.makedirs(os.path.dirname(os.path.abspath(output_file)) or '.', exist_ok=True)
+        
+        # 打开输出文件
+        async with aiofiles.open(output_file, 'a') as f:
+            start_time = time.time()
+            packet_count = 0
+            
+            # 写入开始信息
+            await f.write(f"\n=== Network capture started on {interface} at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+            
+            # 捕获数据包
+            for timestamp, packet in pc:
+                if time.time() - start_time > duration:
+                    break
+                
+                packet_count += 1
+                # 写入数据包信息
+                await f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))}] Packet #{packet_count}, Length: {len(packet)}\n")
+            
+            # 写入结束信息
+            await f.write(f"=== Network capture ended at {time.strftime('%Y-%m-%d %H:%M:%S')}, Captured {packet_count} packets ===\n")
+        
+        return {
+            "success": True,
+            "interface": interface,
+            "duration": duration,
+            "packet_count": packet_count,
+            "output_file": output_file
+        }
+    except Exception as e:
+        print(f"Error capturing network packets: {e}")
+        return {"error": str(e)}
+
+async def get_network_logs(log_file="network_capture.log", lines=100):
+    """获取网络日志"""
+    if aiofiles is None:
+        return {"error": "aiofiles library not installed"}
+    
+    try:
+        if not os.path.exists(log_file):
+            return {"error": "Log file not found"}
+        
+        async with aiofiles.open(log_file, 'r') as f:
+            # 读取文件的最后N行
+            log_lines = []
+            async for line in f:
+                log_lines.append(line.strip())
+            
+            # 返回最后N行
+            return {
+                "success": True,
+                "logs": log_lines[-lines:],
+                "total_lines": len(log_lines),
+                "shown_lines": min(lines, len(log_lines))
+            }
+    except Exception as e:
+        print(f"Error getting network logs: {e}")
+        return {"error": str(e)}

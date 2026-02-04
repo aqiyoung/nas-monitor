@@ -1,19 +1,28 @@
-FROM python:3.10-slim
+# 使用Python官方镜像作为基础镜像
+FROM python:3.9-slim
 
+# 设置工作目录
 WORKDIR /app
 
-# 安装curl用于健康检查
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libc-dev \
+    smartmontools \
+    tcpdump \
+    && rm -rf /var/lib/apt/lists/*
 
+# 复制requirements.txt文件到工作目录
 COPY requirements.txt .
+
+# 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 复制所有文件，但排除data目录（该目录会在运行时挂载）
+# 复制应用代码到工作目录
 COPY . .
 
-# 确保数据目录存在
-RUN mkdir -p /app/data
-
+# 暴露端口
 EXPOSE 8017
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8017"]
+# 启动应用
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8017", "--reload"]

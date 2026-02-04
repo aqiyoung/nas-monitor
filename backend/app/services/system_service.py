@@ -4,6 +4,11 @@ import time
 from datetime import datetime
 import os
 import re
+try:
+    from pySMART import DeviceList
+except ImportError:
+    print("pySMART library not installed. Disk S.M.A.R.T monitoring will be disabled.")
+    DeviceList = None
 
 def get_system_status():
     """获取系统基本状态"""
@@ -369,5 +374,54 @@ def get_disk_usage():
                     continue
         except Exception as backup_e:
             print(f"Backup error: {backup_e}")
+    
+    return disks
+
+def get_disk_smart_info():
+    """获取磁盘S.M.A.R.T信息"""
+    if DeviceList is None:
+        return {"error": "pySMART library not installed"}
+    
+    disks = []
+    try:
+        # 获取所有设备
+        devices = DeviceList()
+        
+        for device in devices:
+            try:
+                # 构建磁盘信息
+                disk_info = {
+                    "device": device.name,
+                    "model": device.model,
+                    "serial": device.serial,
+                    "firmware": device.firmware,
+                    "interface": device.interface,
+                    "size": device.capacity,
+                    "health": device.health,
+                    "temperature": device.temperature if hasattr(device, 'temperature') else None,
+                    "smart_attributes": []
+                }
+                
+                # 获取S.M.A.R.T属性
+                if hasattr(device, 'attributes'):
+                    for attr in device.attributes:
+                        if attr is not None:
+                            disk_info["smart_attributes"].append({
+                                "id": attr.id,
+                                "name": attr.name,
+                                "value": attr.value,
+                                "worst": attr.worst,
+                                "threshold": attr.threshold,
+                                "raw_value": attr.raw,
+                                "status": attr.status
+                            })
+                
+                disks.append(disk_info)
+            except Exception as e:
+                print(f"Error getting S.M.A.R.T info for {device.name}: {e}")
+                continue
+    except Exception as e:
+        print(f"Error getting disk S.M.A.R.T info: {e}")
+        return {"error": str(e)}
     
     return disks
