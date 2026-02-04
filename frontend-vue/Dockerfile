@@ -1,5 +1,5 @@
 # 第一阶段：构建应用
-FROM node:16-alpine as build
+FROM node:20-alpine as build
 
 # 设置工作目录
 WORKDIR /app
