@@ -27,7 +27,7 @@ services:
   # 前端Vue应用
   frontend:
     build:
-      context: ./frontend-vue
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: nas-monitor-frontend
     ports:
