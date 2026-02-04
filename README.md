@@ -4,10 +4,31 @@
 
 ## 版本信息
 
-**当前版本**：v1.1.1
-**发布日期**：2026-01-25
+**当前版本**：v2.0.0
+**发布日期**：2026-02-04
 
 ## 迭代更新记录
+
+### v2.0.0 (2026-02-04)
+
+**完全重构**：
+- ✅ 前端框架：从 React + TypeScript 迁移到 Vue 3 + Element Plus
+- ✅ 前端目录：从 `frontend/` 迁移到 `frontend-vue/`
+- ✅ UI 设计：采用现代化卡片式布局，添加渐变效果和动画
+- ✅ 布局优化：实现全屏显示，两边不留白
+- ✅ 交互体验：添加平滑过渡动画和悬停效果
+
+**功能增强**：
+- ✅ 响应式设计：优化移动端和桌面端显示
+- ✅ 登录功能：修复登录请求格式问题，支持 JSON 格式
+- ✅ 系统监控：增强磁盘 S.M.A.R.T 监控
+- ✅ 网络监控：添加网络数据包捕获功能
+- ✅ Docker 监控：完善容器管理功能
+
+**技术栈更新**：
+- ✅ 前端：Vue 3 + TypeScript + Element Plus + ECharts
+- ✅ 后端：Python FastAPI + psutil + docker-py
+- ✅ 监控：Node Exporter + cAdvisor + Prometheus + InfluxDB
 
 ### v1.1.1 (2026-01-25)
 
@@ -30,27 +51,6 @@
 - ✅ 优化的数据刷新机制：减少不必要的组件重新渲染，解决容器闪烁问题
 - ✅ 新增页面：优化了 Dashboard、Docker、IO、Network 和 System 页面，提高了性能和用户体验
 
-**改进**：
-- ✅ UI 界面优化：改为 Win11 扁平化设计，移除深色主题
-- ✅ 登录功能修复：解决登录请求格式问题
-- ✅ 页面加载状态优化：添加加载覆盖层，提高用户体验
-- ✅ 数据持久化：用户数据、告警记录和配置持久化存储
-- ✅ CPU 图表优化：修复了 CPU 容器图表显示问题，优化了图表样式
-- ✅ Tooltip 优化：改进了 tooltip 的显示位置和样式，使其更靠近鼠标悬停位置
-- ✅ 响应式设计：优化了页面在不同屏幕尺寸下的显示效果
-
-**修复**：
-- ✅ 登录后白屏问题
-- ✅ 5秒数据刷新时容器闪烁问题
-- ✅ 页面异常加载问题
-- ✅ CPU 容器图表显示问题
-- ✅ Tooltip 分层和黑色背景问题
-
-**Docker 配置更新**：
-- ✅ 修改了 docker-compose.yml 的挂载配置，将当前目录下的 frontend 和 backend 文件夹挂载到容器中
-- ✅ 保留了原有的端口映射和环境变量配置
-- ✅ 优化了健康检查配置，提高了容器的稳定性
-
 ### v0.1.0 (初始版本)
 
 **核心功能**：
@@ -65,6 +65,7 @@
 - **CPU 使用率**：总使用率和每核使用率
 - **内存使用情况**：物理内存和交换分区
 - **磁盘使用情况**：各分区使用率
+- **磁盘 S.M.A.R.T**：硬盘健康状态监控
 - **系统基本信息**：主机名、操作系统、启动时间等
 
 ### 2. 网络流量监控
@@ -72,6 +73,7 @@
 - **发送和接收数据包数**
 - **错误和丢弃数据包统计**
 - **网络接口信息**：状态、速度、IP 地址等
+- **网络数据包捕获**：支持指定接口和时长的数据包捕获
 
 ### 3. IO 运行状态监控
 - **磁盘 IO 统计**：读取/写入字节数、次数、时间
@@ -81,6 +83,8 @@
 ### 4. Docker 容器监控
 - **容器列表**：运行状态、镜像、创建时间等
 - **容器资源使用率**：CPU、内存、网络、IO
+- **容器管理**：启动、停止、重启容器
+- **容器日志**：查看容器运行日志
 - **镜像列表**：大小、创建时间等
 - **镜像拉取**：支持从 Docker Hub 拉取最新镜像
 
@@ -101,10 +105,11 @@
 ## 技术栈
 
 - **后端**：Python FastAPI
-- **前端**：React + TypeScript + Vite
-- **监控库**：psutil, docker-py
-- **图表库**：Recharts
+- **前端**：Vue 3 + TypeScript + Element Plus + ECharts
+- **监控库**：psutil, docker-py, pySMART
+- **网络库**：python-pcap, aiofiles
 - **容器化**：Docker, Docker Compose
+- **监控系统**：Node Exporter, cAdvisor, Prometheus, InfluxDB
 - **CI/CD**：GitHub Actions
 
 ## 安装和运行
@@ -120,7 +125,7 @@ python -m uvicorn main:app --reload --port 8017
 
 #### 前端服务
 ```bash
-cd frontend
+cd frontend-vue
 npm install
 npm run dev
 ```
@@ -128,13 +133,16 @@ npm run dev
 ### 2. Docker 部署
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 访问地址
 
 - **前端监控平台**：http://localhost:3003
 - **后端 API**：http://localhost:8017
+- **Prometheus**：http://localhost:9090
+- **Node Exporter**：http://localhost:9100
+- **cAdvisor**：http://localhost:8080
 
 ## 项目结构
 
@@ -144,19 +152,23 @@ as-monitor/
 │   ├── app/
 │   │   ├── api/          # API 路由
 │   │   ├── services/     # 业务逻辑
+│   │   ├── core/         # 核心配置
 │   │   └── models/       # 数据模型
 │   ├── main.py           # 应用入口
 │   ├── requirements.txt  # 依赖配置
 │   └── Dockerfile        # Docker 配置
-├── frontend/             # 前端应用
+├── frontend-vue/         # 前端应用
 │   ├── src/
 │   │   ├── components/   # 组件
-│   │   ├── pages/        # 页面
+│   │   ├── views/        # 页面
+│   │   ├── router/       # 路由
 │   │   └── services/     # 服务
 │   ├── index.html        # HTML 入口
 │   ├── package.json      # 依赖配置
 │   ├── Dockerfile        # Docker 配置
 │   └── nginx.conf        # Nginx 配置
+├── prometheus/           # Prometheus 配置
+│   └── config/           # 配置文件
 ├── docker-compose.yml    # Docker Compose 配置
 └── .github/workflows/    # GitHub Actions 工作流
 ```
@@ -164,12 +176,11 @@ as-monitor/
 ## 页面说明
 
 1. **仪表盘**：系统概览，显示 CPU、内存、磁盘和网络的主要指标
-2. **系统状态**：详细的 CPU、内存和磁盘使用情况
-3. **网络流量**：网络流量统计和接口信息
+2. **系统状态**：详细的 CPU、内存和磁盘使用情况，包括 S.M.A.R.T 信息
+3. **网络流量**：网络流量统计、接口信息和数据包捕获功能
 4. **IO 状态**：磁盘和系统 IO 详细信息
-5. **Docker 监控**：容器和镜像管理，支持镜像拉取
-6. **用户管理**：用户的创建、编辑、删除和状态管理
-7. **告警管理**：告警记录查看、告警配置和访问 IP 管理
+5. **Docker 监控**：容器和镜像管理，支持容器操作和日志查看
+6. **告警管理**：告警记录查看、告警配置和访问 IP 管理
 
 ## GitHub Actions
 
