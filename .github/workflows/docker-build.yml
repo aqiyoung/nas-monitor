@@ -97,6 +97,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend  # 修改为正确的前端目录
+          dockerfile: ./frontend/Dockerfile  # 明确指定Dockerfile路径
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
