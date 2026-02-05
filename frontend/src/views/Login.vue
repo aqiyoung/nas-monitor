@@ -44,7 +44,7 @@ const errorMessage = ref('')
 
 const loginForm = reactive({
   username: 'admin',
-  password: 'admin123'
+  password: 'password'
 })
 
 const rules = {
