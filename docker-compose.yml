@@ -3,14 +3,11 @@
 services:
   # 后端FastAPI服务
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/aqiyoung/nas-monitor-backend:latest
     container_name: nas-monitor-backend
     ports:
       - "8017:8017"
     volumes:
-      - ./backend:/app
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - HOST=0.0.0.0
@@ -26,9 +23,7 @@ services:
 
   # 前端Vue应用
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
     container_name: nas-monitor-frontend
     ports:
       - "3003:80"
@@ -63,7 +58,7 @@ services:
     image: influxdb:2.7
     container_name: nas-influxdb
     ports:
-      - 8086:8086
+      - 8087:8086
     volumes:
       - ./influxdb/data:/var/lib/influxdb2
       - ./influxdb/config:/etc/influxdb2
