@@ -798,6 +798,72 @@ def get_docker_info():
             ]
         }
 
+# 获取Prometheus指标
+def get_prometheus_metrics():
+    try:
+        # 尝试从nas-prometheus获取指标
+        try:
+            response = requests.get('http://nas-prometheus:9090/api/v1/query', params={
+                'query': 'up'
+            })
+            if response.status_code == 200:
+                # 解析Prometheus API响应
+                metrics_data = response.json()
+                return {
+                    "success": True,
+                    "data": metrics_data
+                }
+        except Exception as e:
+            print(f"从nas-prometheus获取指标失败: {e}")
+        
+        # 返回默认值
+        return {
+            "success": False,
+            "error": "无法从Prometheus获取指标"
+        }
+    except Exception as e:
+        print(f"获取Prometheus指标失败: {e}")
+        # 返回默认值
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+# 获取InfluxDB数据
+def get_influxdb_data():
+    try:
+        # 尝试从nas-influxdb获取数据
+        try:
+            # 注意：InfluxDB v2.x API需要认证，这里使用默认的token
+            headers = {
+                'Authorization': 'Token nas_monitor_token',
+                'Content-Type': 'application/json'
+            }
+            
+            response = requests.get('http://nas-influxdb:8086/api/v2/buckets', headers=headers)
+            if response.status_code == 200:
+                # 解析InfluxDB API响应
+                buckets_data = response.json()
+                return {
+                    "success": True,
+                    "data": buckets_data
+                }
+        except Exception as e:
+            print(f"从nas-influxdb获取数据失败: {e}")
+        
+        # 返回默认值
+        return {
+            "success": False,
+            "error": "无法从InfluxDB获取数据"
+        }
+    except Exception as e:
+        print(f"获取InfluxDB数据失败: {e}")
+        # 返回默认值
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 @app.route('/api/')
 def root():
     return jsonify({"message": "NAS Monitor API is running"})
@@ -915,6 +981,18 @@ def restart_container(container_id):
 @app.route('/api/docker/containers/<container_id>/logs')
 def get_container_logs(container_id):
     return jsonify({"logs": []})
+
+# Prometheus相关API
+@app.route('/api/prometheus/metrics')
+def get_prometheus_data():
+    metrics = get_prometheus_metrics()
+    return jsonify(metrics)
+
+# InfluxDB相关API
+@app.route('/api/influxdb/data')
+def get_influxdb_metrics():
+    data = get_influxdb_data()
+    return jsonify(data)
 
 # 告警相关API
 @app.route('/api/alarm/configs')
