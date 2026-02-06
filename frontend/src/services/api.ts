@@ -120,13 +120,13 @@ export const dockerApi = {
 // 告警相关API
 export const alarmApi = {
   getAlarms: () => {
-    return api.get('/alarm/list')
+    return api.get('/alarm/configs')
   },
-  getConfig: () => {
-    return api.get('/alarm/config')
+  getConfig: (config_id: string) => {
+    return api.get(`/alarm/configs/${config_id}`)
   },
-  updateConfig: (data: any) => {
-    return api.put('/alarm/config', data)
+  updateConfig: (config_id: string, data: any) => {
+    return api.put(`/alarm/configs/${config_id}`, data)
   }
 }
 
