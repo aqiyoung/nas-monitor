@@ -85,7 +85,7 @@ def health_check():
     return jsonify({"status": "healthy"})
 
 # 认证相关API
-@app.route('/api/auth/login', methods=['POST'])
+@app.route('/auth/login', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
@@ -96,112 +96,112 @@ def login():
     else:
         return jsonify({"detail": "用户名或密码错误"}), 401
 
-@app.route('/api/auth/me', methods=['GET'])
+@app.route('/auth/me', methods=['GET'])
 def get_current_user():
     return jsonify(users["admin"])
 
 # 系统相关API
-@app.route('/api/system/status')
+@app.route('/system/status')
 def get_system_status():
     return jsonify(system_data)
 
-@app.route('/api/system/cpu')
+@app.route('/system/cpu')
 def get_cpu_usage():
     return jsonify({"usage": system_data['cpu_usage']})
 
-@app.route('/api/system/memory')
+@app.route('/system/memory')
 def get_memory_usage():
     return jsonify({"usage": system_data['memory_usage']})
 
-@app.route('/api/system/disk')
+@app.route('/system/disk')
 def get_disk_usage():
     return jsonify({"usage": system_data['disk_usage']})
 
-@app.route('/api/system/disk/smart')
+@app.route('/system/disk/smart')
 def get_disk_smart_info():
     return jsonify({"disks": []})
 
 # 网络相关API
-@app.route('/api/network/traffic')
+@app.route('/network/traffic')
 def get_network_traffic():
     return jsonify(network_data['traffic'])
 
-@app.route('/api/network/interfaces')
+@app.route('/network/interfaces')
 def get_network_interfaces():
     return jsonify(network_data['interfaces'])
 
-@app.route('/api/network/capture', methods=['POST'])
+@app.route('/network/capture', methods=['POST'])
 def capture_network_packets():
     return jsonify({"message": "捕获网络数据包已启动"})
 
-@app.route('/api/network/logs')
+@app.route('/network/logs')
 def get_network_logs():
     return jsonify({"logs": []})
 
 # IO相关API
-@app.route('/api/io/stats')
+@app.route('/io/stats')
 def get_io_stats():
     return jsonify({"disks": []})
 
 # Docker相关API
-@app.route('/api/docker/containers')
+@app.route('/docker/containers')
 def get_containers():
     return jsonify(docker_data['containers'])
 
-@app.route('/api/docker/stats')
+@app.route('/docker/stats')
 def get_docker_stats():
     return jsonify({"containers": []})
 
-@app.route('/api/docker/images')
+@app.route('/docker/images')
 def get_docker_images():
     return jsonify(docker_data['images'])
 
-@app.route('/api/docker/images/pull', methods=['POST'])
+@app.route('/docker/images/pull', methods=['POST'])
 def pull_docker_image():
     data = request.json
     image_name = data.get('image_name')
     return jsonify({"success": True, "image_id": "image1", "tags": [image_name]})
 
-@app.route('/api/docker/images/<image_id>', methods=['DELETE'])
+@app.route('/docker/images/<image_id>', methods=['DELETE'])
 def delete_docker_image(image_id):
     return jsonify({"message": "镜像删除成功"})
 
-@app.route('/api/docker/containers/<container_id>/start', methods=['POST'])
+@app.route('/docker/containers/<container_id>/start', methods=['POST'])
 def start_container(container_id):
     return jsonify({"message": "容器启动成功"})
 
-@app.route('/api/docker/containers/<container_id>/stop', methods=['POST'])
+@app.route('/docker/containers/<container_id>/stop', methods=['POST'])
 def stop_container(container_id):
     return jsonify({"message": "容器停止成功"})
 
-@app.route('/api/docker/containers/<container_id>/restart', methods=['POST'])
+@app.route('/docker/containers/<container_id>/restart', methods=['POST'])
 def restart_container(container_id):
     return jsonify({"message": "容器重启成功"})
 
-@app.route('/api/docker/containers/<container_id>/logs')
+@app.route('/docker/containers/<container_id>/logs')
 def get_container_logs(container_id):
     return jsonify({"logs": []})
 
 # 告警相关API
-@app.route('/api/alarm/configs')
+@app.route('/alarm/configs')
 def get_alarm_configs():
     return jsonify(alarm_data['configs'])
 
-@app.route('/api/alarm/configs/<config_id>')
+@app.route('/alarm/configs/<config_id>')
 def get_alarm_config(config_id):
     for config in alarm_data['configs']:
         if config['id'] == config_id:
             return jsonify(config)
     return jsonify({"detail": "告警配置不存在"}), 404
 
-@app.route('/api/alarm/configs', methods=['POST'])
+@app.route('/alarm/configs', methods=['POST'])
 def create_alarm_config():
     data = request.json
     data['id'] = "alarm" + str(len(alarm_data['configs']) + 1)
     alarm_data['configs'].append(data)
     return jsonify(data)
 
-@app.route('/api/alarm/configs/<config_id>', methods=['PUT'])
+@app.route('/alarm/configs/<config_id>', methods=['PUT'])
 def update_alarm_config(config_id):
     data = request.json
     for config in alarm_data['configs']:
@@ -210,7 +210,7 @@ def update_alarm_config(config_id):
             return jsonify(config)
     return jsonify({"detail": "告警配置不存在"}), 404
 
-@app.route('/api/alarm/configs/<config_id>', methods=['DELETE'])
+@app.route('/alarm/configs/<config_id>', methods=['DELETE'])
 def delete_alarm_config(config_id):
     for i, config in enumerate(alarm_data['configs']):
         if config['id'] == config_id:
@@ -218,19 +218,19 @@ def delete_alarm_config(config_id):
             return jsonify({"message": "告警配置删除成功"})
     return jsonify({"detail": "告警配置不存在"}), 404
 
-@app.route('/api/alarm/records')
+@app.route('/alarm/records')
 def get_alarm_records():
     return jsonify(alarm_data['records'])
 
-@app.route('/api/alarm/records/<record_id>')
+@app.route('/alarm/records/<record_id>')
 def get_alarm_record(record_id):
     return jsonify({"detail": "告警记录不存在"}), 404
 
-@app.route('/api/alarm/records/<record_id>', methods=['PUT'])
+@app.route('/alarm/records/<record_id>', methods=['PUT'])
 def update_alarm_record(record_id):
     return jsonify({"detail": "告警记录不存在"}), 404
 
-@app.route('/api/alarm/statistics')
+@app.route('/alarm/statistics')
 def get_alarm_statistics():
     return jsonify({
         "total": 0,
@@ -239,22 +239,22 @@ def get_alarm_statistics():
         "recent": 0
     })
 
-@app.route('/api/alarm/detect', methods=['POST'])
+@app.route('/alarm/detect', methods=['POST'])
 def detect_alarms():
     return jsonify({"message": "告警检测已触发"})
 
 # 用户相关API
-@app.route('/api/user')
+@app.route('/user')
 def get_users():
     return jsonify(list(users.values()))
 
-@app.route('/api/user/<username>')
+@app.route('/user/<username>')
 def get_user(username):
     if username in users:
         return jsonify(users[username])
     return jsonify({"detail": "用户不存在"}), 404
 
-@app.route('/api/user', methods=['POST'])
+@app.route('/user', methods=['POST'])
 def create_user():
     data = request.json
     username = data.get('username')
@@ -268,7 +268,7 @@ def create_user():
         return jsonify(users[username])
     return jsonify({"detail": "用户已存在"}), 400
 
-@app.route('/api/user/<username>', methods=['PUT'])
+@app.route('/user/<username>', methods=['PUT'])
 def update_user(username):
     if username in users:
         data = request.json
@@ -276,7 +276,7 @@ def update_user(username):
         return jsonify(users[username])
     return jsonify({"detail": "用户不存在"}), 404
 
-@app.route('/api/user/<username>', methods=['DELETE'])
+@app.route('/user/<username>', methods=['DELETE'])
 def delete_user(username):
     if username in users and username != "admin":
         del users[username]

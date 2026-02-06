@@ -18,6 +18,9 @@ COPY requirements.txt .
 # 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 安装Flask和Flask-CORS
+RUN pip install --no-cache-dir flask flask-cors
+
 # 复制应用代码到工作目录
 COPY . .
 
@@ -25,4 +28,4 @@ COPY . .
 EXPOSE 8017
 
 # 启动应用
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8017", "--reload"]
+CMD ["python", "flask_app.py"]
