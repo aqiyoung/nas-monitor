@@ -84,7 +84,62 @@ def get_system_info():
         except Exception as e:
             print(f"从nas-node-exporter获取系统信息失败: {e}")
         
-        # 如果从nas-node-exporter获取失败，使用本地获取
+        # 如果从nas-node-exporter获取失败，尝试从/proc和/etc读取主机信息
+        try:
+            # 获取主机名
+            hostname = socket.gethostname()
+            if os.path.exists('/proc/sys/kernel/hostname'):
+                with open('/proc/sys/kernel/hostname', 'r') as f:
+                    hostname = f.read().strip()
+            
+            # 获取操作系统信息
+            os_info = platform.system()
+            os_version = platform.release()
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    os_release = f.read()
+                    for line in os_release.splitlines():
+                        if line.startswith('NAME='):
+                            os_info = line.split('=')[1].strip('"')
+                        elif line.startswith('VERSION='):
+                            os_version = line.split('=')[1].strip('"')
+            
+            # 获取架构信息
+            architecture = platform.machine()
+            if os.path.exists('/proc/cpuinfo'):
+                with open('/proc/cpuinfo', 'r') as f:
+                    cpuinfo = f.read()
+                    import re
+                    arch_match = re.search(r'model name\s*:\s*(.+)', cpuinfo)
+                    if arch_match:
+                        architecture = arch_match.group(1)
+            
+            # 获取运行时间和启动时间
+            uptime_seconds = time.time() - psutil.boot_time()
+            if os.path.exists('/proc/uptime'):
+                with open('/proc/uptime', 'r') as f:
+                    uptime_seconds = float(f.read().split()[0])
+            
+            uptime_days = int(uptime_seconds // 86400)
+            uptime_hours = int((uptime_seconds % 86400) // 3600)
+            uptime_minutes = int((uptime_seconds % 3600) // 60)
+            uptime_seconds = int(uptime_seconds % 60)
+            uptime = f"{uptime_days}d {uptime_hours}h {uptime_minutes}m {uptime_seconds}s"
+            
+            boot_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() - uptime_seconds))
+            
+            return {
+                "hostname": hostname,
+                "os": os_info,
+                "os_version": os_version,
+                "architecture": architecture,
+                "uptime": uptime,
+                "boot_time": boot_time
+            }
+        except Exception as e:
+            print(f"从/proc和/etc获取系统信息失败: {e}")
+        
+        # 如果所有方法都失败，使用本地获取作为最后的备选
         # 获取主机名
         hostname = socket.gethostname()
         
@@ -197,7 +252,51 @@ def get_cpu_info():
         except Exception as e:
             print(f"从nas-node-exporter获取CPU信息失败: {e}")
         
-        # 如果从nas-node-exporter获取失败，使用本地获取
+        # 如果从nas-node-exporter获取失败，尝试从/proc读取主机CPU信息
+        try:
+            if os.path.exists('/proc/stat'):
+                with open('/proc/stat', 'r') as f:
+                    cpu_info = f.readline()
+                
+                # 解析CPU信息
+                import re
+                cpu_stats = re.findall(r'\d+', cpu_info)
+                if len(cpu_stats) >= 4:
+                    user, nice, system, idle = map(int, cpu_stats[:4])
+                    total = user + nice + system + idle
+                    cpu_usage = (1 - idle / total) * 100
+                else:
+                    cpu_usage = 0
+                
+                # 获取CPU核心数
+                cpu_count = {
+                    "physical": psutil.cpu_count(logical=False),
+                    "logical": psutil.cpu_count(logical=True)
+                }
+                
+                # 获取每个核心的使用率
+                per_core_usage = []
+                if os.path.exists('/proc/stat'):
+                    with open('/proc/stat', 'r') as f:
+                        for line in f:
+                            if line.startswith('cpu') and line[3].isdigit():
+                                core_stats = re.findall(r'\d+', line)
+                                if len(core_stats) >= 4:
+                                    user, nice, system, idle = map(int, core_stats[:4])
+                                    total = user + nice + system + idle
+                                    if total > 0:
+                                        core_usage = (1 - idle / total) * 100
+                                        per_core_usage.append(core_usage)
+                
+                return {
+                    "total_usage": cpu_usage,
+                    "per_core_usage": per_core_usage,
+                    "cpu_count": cpu_count
+                }
+        except Exception as e:
+            print(f"从/proc获取CPU信息失败: {e}")
+        
+        # 如果所有方法都失败，使用本地获取作为最后的备选
         # 获取CPU使用率
         cpu_usage = psutil.cpu_percent(interval=1)
         
@@ -304,7 +403,48 @@ def get_memory_info():
         except Exception as e:
             print(f"从nas-node-exporter获取内存信息失败: {e}")
         
-        # 如果从nas-node-exporter获取失败，使用本地获取
+        # 如果从nas-node-exporter获取失败，尝试从/proc读取主机内存信息
+        try:
+            if os.path.exists('/proc/meminfo'):
+                with open('/proc/meminfo', 'r') as f:
+                    meminfo = f.read()
+                
+                # 解析内存信息
+                import re
+                total_memory_match = re.search(r'MemTotal:\s+(\d+)\s*kB', meminfo)
+                available_memory_match = re.search(r'MemAvailable:\s+(\d+)\s*kB', meminfo)
+                total_swap_match = re.search(r'SwapTotal:\s+(\d+)\s*kB', meminfo)
+                free_swap_match = re.search(r'SwapFree:\s+(\d+)\s*kB', meminfo)
+                
+                total_memory = int(total_memory_match.group(1)) * 1024 if total_memory_match else 0
+                available_memory = int(available_memory_match.group(1)) * 1024 if available_memory_match else 0
+                total_swap = int(total_swap_match.group(1)) * 1024 if total_swap_match else 0
+                free_swap = int(free_swap_match.group(1)) * 1024 if free_swap_match else 0
+                
+                used_memory = total_memory - available_memory
+                used_swap = total_swap - free_swap
+                
+                memory_percent = (used_memory / total_memory) * 100 if total_memory > 0 else 0
+                swap_percent = (used_swap / total_swap) * 100 if total_swap > 0 else 0
+                
+                return {
+                    "memory": {
+                        "total": total_memory,
+                        "available": available_memory,
+                        "used": used_memory,
+                        "percent": memory_percent
+                    },
+                    "swap": {
+                        "total": total_swap,
+                        "used": used_swap,
+                        "free": free_swap,
+                        "percent": swap_percent
+                    }
+                }
+        except Exception as e:
+            print(f"从/proc获取内存信息失败: {e}")
+        
+        # 如果所有方法都失败，使用本地获取作为最后的备选
         # 获取内存信息
         memory = psutil.virtual_memory()
         
@@ -404,7 +544,38 @@ def get_disk_info():
         except Exception as e:
             print(f"从nas-node-exporter获取磁盘信息失败: {e}")
         
-        # 如果从nas-node-exporter获取失败，使用本地获取
+        # 如果从nas-node-exporter获取失败，尝试从/proc和df命令读取主机磁盘信息
+        try:
+            disk_info = []
+            # 尝试使用df命令获取磁盘信息
+            import subprocess
+            result = subprocess.run(['df', '-h'], capture_output=True, text=True)
+            if result.returncode == 0:
+                lines = result.stdout.strip().split('\n')[1:]  # 跳过标题行
+                for line in lines:
+                    parts = line.split()
+                    if len(parts) >= 6:
+                        mountpoint = parts[5]
+                        # 跳过虚拟文件系统
+                        if mountpoint not in ['/dev', '/sys', '/proc', '/run', '/dev/shm']:
+                            try:
+                                total = int(parts[1].replace('G', '')) * 1024 * 1024 * 1024
+                                used = int(parts[2].replace('G', '')) * 1024 * 1024 * 1024
+                                percent = float(parts[4].replace('%', ''))
+                                disk_info.append({
+                                    "mountpoint": mountpoint,
+                                    "percent": percent,
+                                    "used": used,
+                                    "total": total
+                                })
+                            except:
+                                pass
+                if disk_info:
+                    return disk_info
+        except Exception as e:
+            print(f"从df命令获取磁盘信息失败: {e}")
+        
+        # 如果所有方法都失败，使用本地获取作为最后的备选
         # 获取所有磁盘分区
         partitions = psutil.disk_partitions()
         disk_info = []
@@ -565,7 +736,102 @@ def get_network_info():
         except Exception as e:
             print(f"从nas-node-exporter获取网络信息失败: {e}")
         
-        # 如果从nas-node-exporter获取失败，使用本地获取
+        # 如果从nas-node-exporter获取失败，尝试从/proc和ip命令读取主机网络信息
+        try:
+            # 获取网络流量信息
+            bytes_sent = 0
+            bytes_recv = 0
+            packets_sent = 0
+            packets_recv = 0
+            errin = 0
+            errout = 0
+            dropin = 0
+            dropout = 0
+            
+            if os.path.exists('/proc/net/dev'):
+                with open('/proc/net/dev', 'r') as f:
+                    net_dev = f.read()
+                
+                # 解析网络流量信息
+                import re
+                for line in net_dev.split('\n')[2:]:  # 跳过标题行
+                    if ':' in line:
+                        parts = line.split(':')
+                        if len(parts) >= 2:
+                            interface_name = parts[0].strip()
+                            stats = re.findall(r'\d+', parts[1])
+                            if len(stats) >= 10:
+                                bytes_recv += int(stats[0])
+                                packets_recv += int(stats[1])
+                                errin += int(stats[2])
+                                dropin += int(stats[3])
+                                bytes_sent += int(stats[8])
+                                packets_sent += int(stats[9])
+                                errout += int(stats[10])
+                                dropout += int(stats[11])
+            
+            # 获取网络接口信息
+            interfaces = []
+            # 尝试使用ip命令获取接口信息
+            import subprocess
+            result = subprocess.run(['ip', 'addr'], capture_output=True, text=True)
+            if result.returncode == 0:
+                current_interface = None
+                ip_addresses = []
+                mac_address = ""
+                
+                for line in result.stdout.strip().split('\n'):
+                    if line.startswith(' '):
+                        if 'inet ' in line:
+                            ip = line.split('inet ')[1].split('/')[0]
+                            ip_addresses.append({"ip": ip})
+                        elif 'link/ether' in line:
+                            mac_address = line.split('link/ether ')[1].split(' ')[0]
+                    else:
+                        if current_interface:
+                            interfaces.append({
+                                "name": current_interface,
+                                "mac_address": mac_address,
+                                "is_up": True,  # 默认假设接口是启用的
+                                "speed": 0,  # 需要额外命令获取
+                                "mtu": 1500,  # 默认MTU
+                                "ip_addresses": ip_addresses
+                            })
+                        
+                        parts = line.split(':')
+                        if len(parts) >= 2:
+                            current_interface = parts[1].strip()
+                            ip_addresses = []
+                            mac_address = ""
+                
+                # 添加最后一个接口
+                if current_interface:
+                    interfaces.append({
+                        "name": current_interface,
+                        "mac_address": mac_address,
+                        "is_up": True,
+                        "speed": 0,
+                        "mtu": 1500,
+                        "ip_addresses": ip_addresses
+                    })
+            
+            return {
+                "traffic": {
+                    "bytes_sent": bytes_sent,
+                    "bytes_recv": bytes_recv,
+                    "packets_sent": packets_sent,
+                    "packets_recv": packets_recv,
+                    "errin": errin,
+                    "errout": errout,
+                    "dropin": dropin,
+                    "dropout": dropout
+                },
+                "interfaces": interfaces
+            }
+        except Exception as e:
+            print(f"从/proc和ip命令获取网络信息失败: {e}")
+        
+        # 如果所有方法都失败，使用本地获取作为最后的备选
         # 获取网络接口信息
         net_io = psutil.net_io_counters()
         
