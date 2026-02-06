@@ -103,19 +103,53 @@ def get_current_user():
 # 系统相关API
 @app.route('/api/system/status')
 def get_system_status():
-    return jsonify(system_data)
+    return jsonify({
+        "hostname": system_data['hostname'],
+        "os": system_data['os_system'],
+        "os_version": system_data['os_version'],
+        "architecture": system_data['architecture'],
+        "boot_time": "",
+        "uptime": system_data['uptime']
+    })
 
 @app.route('/api/system/cpu')
 def get_cpu_usage():
-    return jsonify({"usage": system_data['cpu_usage']})
+    return jsonify({
+        "total_usage": system_data['cpu_usage'],
+        "per_core_usage": [],
+        "cpu_count": {
+            "physical": 4,
+            "logical": 8
+        }
+    })
 
 @app.route('/api/system/memory')
 def get_memory_usage():
-    return jsonify({"usage": system_data['memory_usage']})
+    return jsonify({
+        "memory": {
+            "total": 8192000000,
+            "available": 4096000000,
+            "used": 4096000000,
+            "percent": system_data['memory_usage']
+        },
+        "swap": {
+            "total": 4096000000,
+            "used": 0,
+            "free": 4096000000,
+            "percent": 0
+        }
+    })
 
 @app.route('/api/system/disk')
 def get_disk_usage():
-    return jsonify({"usage": system_data['disk_usage']})
+    return jsonify([
+        {
+            "mountpoint": "/",
+            "percent": system_data['disk_usage'],
+            "used": 60000000000,
+            "total": 100000000000
+        }
+    ])
 
 @app.route('/api/system/disk/smart')
 def get_disk_smart_info():
@@ -124,7 +158,17 @@ def get_disk_smart_info():
 # 网络相关API
 @app.route('/api/network/traffic')
 def get_network_traffic():
-    return jsonify(network_data['traffic'])
+    return jsonify({
+        "bytes_sent": network_data['traffic']['sent'],
+        "bytes_recv": network_data['traffic']['received'],
+        "packets_sent": 0,
+        "packets_recv": 0,
+        "errin": 0,
+        "errout": 0,
+        "dropin": 0,
+        "dropout": 0,
+        "wifi_name": "未连接"
+    })
 
 @app.route('/api/network/interfaces')
 def get_network_interfaces():
@@ -150,7 +194,14 @@ def get_containers():
 
 @app.route('/api/docker/stats')
 def get_docker_stats():
-    return jsonify({"containers": []})
+    return jsonify([
+        {
+            "name": "nginx",
+            "cpu_usage": 0.5,
+            "memory_usage": 10485760,
+            "memory_limit": 104857600
+        }
+    ])
 
 @app.route('/api/docker/images')
 def get_docker_images():
