@@ -130,4 +130,18 @@ export const alarmApi = {
   }
 }
 
+// Prometheus相关API
+export const prometheusApi = {
+  getMetrics: () => {
+    return api.get('/prometheus/metrics')
+  }
+}
+
+// InfluxDB相关API
+export const influxdbApi = {
+  getData: () => {
+    return api.get('/influxdb/data')
+  }
+}
+
 export default api

@@ -47,6 +47,12 @@
           </template>
           <span>告警管理</span>
         </el-menu-item>
+        <el-menu-item index="/monitoring">
+          <template #icon>
+            <el-icon><DataAnalysis /></el-icon>
+          </template>
+          <span>监控中心</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
