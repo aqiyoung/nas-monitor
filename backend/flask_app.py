@@ -86,15 +86,19 @@ def get_system_info():
         
         # 如果从nas-node-exporter获取失败，尝试从/proc和/etc读取主机信息
         try:
+            # 优先使用主机的文件系统
+            host_etc = '/host/etc' if os.path.exists('/host/etc') else '/etc'
+            host_proc = '/host/proc' if os.path.exists('/host/proc') else '/proc'
+            
             # 获取主机名
             hostname = ""
-            # 尝试从宿主机的/etc/hostname文件读取（如果挂载了宿主机的/etc目录）
-            if os.path.exists('/host/etc/hostname'):
-                with open('/host/etc/hostname', 'r') as f:
+            # 尝试从宿主机的/etc/hostname文件读取
+            if os.path.exists(f'{host_etc}/hostname'):
+                with open(f'{host_etc}/hostname', 'r') as f:
                     hostname = f.read().strip()
             # 尝试从/proc/sys/kernel/hostname读取
-            elif os.path.exists('/proc/sys/kernel/hostname'):
-                with open('/proc/sys/kernel/hostname', 'r') as f:
+            elif os.path.exists(f'{host_proc}/sys/kernel/hostname'):
+                with open(f'{host_proc}/sys/kernel/hostname', 'r') as f:
                     hostname = f.read().strip()
             # 尝试从环境变量读取
             elif 'HOST_HOSTNAME' in os.environ:
@@ -106,8 +110,8 @@ def get_system_info():
             # 获取操作系统信息
             os_info = platform.system()
             os_version = platform.release()
-            if os.path.exists('/etc/os-release'):
-                with open('/etc/os-release', 'r') as f:
+            if os.path.exists(f'{host_etc}/os-release'):
+                with open(f'{host_etc}/os-release', 'r') as f:
                     os_release = f.read()
                     for line in os_release.splitlines():
                         if line.startswith('NAME='):
@@ -117,8 +121,8 @@ def get_system_info():
             
             # 获取架构信息
             architecture = platform.machine()
-            if os.path.exists('/proc/cpuinfo'):
-                with open('/proc/cpuinfo', 'r') as f:
+            if os.path.exists(f'{host_proc}/cpuinfo'):
+                with open(f'{host_proc}/cpuinfo', 'r') as f:
                     cpuinfo = f.read()
                     import re
                     arch_match = re.search(r'model name\s*:\s*(.+)', cpuinfo)
@@ -127,8 +131,8 @@ def get_system_info():
             
             # 获取运行时间和启动时间
             uptime_seconds = time.time() - psutil.boot_time()
-            if os.path.exists('/proc/uptime'):
-                with open('/proc/uptime', 'r') as f:
+            if os.path.exists(f'{host_proc}/uptime'):
+                with open(f'{host_proc}/uptime', 'r') as f:
                     uptime_seconds = float(f.read().split()[0])
             
             uptime_days = int(uptime_seconds // 86400)
@@ -265,8 +269,11 @@ def get_cpu_info():
         
         # 如果从nas-node-exporter获取失败，尝试从/proc读取主机CPU信息
         try:
-            if os.path.exists('/proc/stat'):
-                with open('/proc/stat', 'r') as f:
+            # 优先使用主机的proc文件系统
+            host_proc = '/host/proc' if os.path.exists('/host/proc') else '/proc'
+            
+            if os.path.exists(f'{host_proc}/stat'):
+                with open(f'{host_proc}/stat', 'r') as f:
                     cpu_info = f.readline()
                 
                 # 解析CPU信息
@@ -287,8 +294,8 @@ def get_cpu_info():
                 
                 # 获取每个核心的使用率
                 per_core_usage = []
-                if os.path.exists('/proc/stat'):
-                    with open('/proc/stat', 'r') as f:
+                if os.path.exists(f'{host_proc}/stat'):
+                    with open(f'{host_proc}/stat', 'r') as f:
                         for line in f:
                             if line.startswith('cpu') and line[3].isdigit():
                                 core_stats = re.findall(r'\d+', line)
@@ -416,8 +423,11 @@ def get_memory_info():
         
         # 如果从nas-node-exporter获取失败，尝试从/proc读取主机内存信息
         try:
-            if os.path.exists('/proc/meminfo'):
-                with open('/proc/meminfo', 'r') as f:
+            # 优先使用主机的proc文件系统
+            host_proc = '/host/proc' if os.path.exists('/host/proc') else '/proc'
+            
+            if os.path.exists(f'{host_proc}/meminfo'):
+                with open(f'{host_proc}/meminfo', 'r') as f:
                     meminfo = f.read()
                 
                 # 解析内存信息
@@ -759,8 +769,11 @@ def get_network_info():
             dropin = 0
             dropout = 0
             
-            if os.path.exists('/proc/net/dev'):
-                with open('/proc/net/dev', 'r') as f:
+            # 优先使用主机的proc文件系统
+            proc_path = '/host/proc' if os.path.exists('/host/proc') else '/proc'
+            
+            if os.path.exists(f'{proc_path}/net/dev'):
+                with open(f'{proc_path}/net/dev', 'r') as f:
                     net_dev = f.read()
                 
                 # 解析网络流量信息
@@ -1284,9 +1297,12 @@ def get_network_logs():
 # 获取IO信息
 def get_io_info():
     try:
+        # 优先使用主机的proc文件系统
+        host_proc = '/host/proc' if os.path.exists('/host/proc') else '/proc'
+        
         # 尝试从/proc/diskstats读取IO信息
-        if os.path.exists('/proc/diskstats'):
-            with open('/proc/diskstats', 'r') as f:
+        if os.path.exists(f'{host_proc}/diskstats'):
+            with open(f'{host_proc}/diskstats', 'r') as f:
                 diskstats = f.read()
             
             disks = []
