@@ -6,6 +6,7 @@ import socket
 import time
 import os
 import docker
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -44,6 +45,46 @@ alarm_data = {
 # 获取系统基本信息
 def get_system_info():
     try:
+        # 尝试从nas-node-exporter获取系统信息
+        try:
+            response = requests.get('http://nas-node-exporter:9100/metrics')
+            if response.status_code == 200:
+                # 解析metrics获取系统信息
+                metrics = response.text
+                
+                # 获取主机名
+                hostname = socket.gethostname()
+                
+                # 获取操作系统信息
+                os_info = platform.system()
+                os_version = platform.release()
+                
+                # 获取架构信息
+                architecture = platform.machine()
+                
+                # 获取运行时间
+                uptime_seconds = time.time() - psutil.boot_time()
+                uptime_days = int(uptime_seconds // 86400)
+                uptime_hours = int((uptime_seconds % 86400) // 3600)
+                uptime_minutes = int((uptime_seconds % 3600) // 60)
+                uptime_seconds = int(uptime_seconds % 60)
+                uptime = f"{uptime_days}d {uptime_hours}h {uptime_minutes}m {uptime_seconds}s"
+                
+                # 获取启动时间
+                boot_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(psutil.boot_time()))
+                
+                return {
+                    "hostname": hostname,
+                    "os": os_info,
+                    "os_version": os_version,
+                    "architecture": architecture,
+                    "uptime": uptime,
+                    "boot_time": boot_time
+                }
+        except Exception as e:
+            print(f"从nas-node-exporter获取系统信息失败: {e}")
+        
+        # 如果从nas-node-exporter获取失败，使用本地获取
         # 获取主机名
         hostname = socket.gethostname()
         
@@ -88,6 +129,75 @@ def get_system_info():
 # 获取CPU使用率
 def get_cpu_info():
     try:
+        # 尝试从nas-node-exporter获取CPU信息
+        try:
+            response = requests.get('http://nas-node-exporter:9100/metrics')
+            if response.status_code == 200:
+                # 解析metrics获取CPU信息
+                metrics = response.text
+                
+                # 提取CPU使用率
+                import re
+                cpu_usage_match = re.search(r'node_cpu_seconds_total\{mode="idle"\} (\d+\.\d+)', metrics)
+                if cpu_usage_match:
+                    idle_time = float(cpu_usage_match.group(1))
+                else:
+                    idle_time = 0
+                
+                # 提取总CPU时间
+                total_time = 0
+                for line in metrics.split('\n'):
+                    if line.startswith('node_cpu_seconds_total{') and 'mode=' in line:
+                        match = re.search(r'node_cpu_seconds_total\{[^}]+\} (\d+\.\d+)', line)
+                        if match:
+                            total_time += float(match.group(1))
+                
+                # 计算CPU使用率
+                if total_time > 0:
+                    cpu_usage = (1 - idle_time / total_time) * 100
+                else:
+                    cpu_usage = 0
+                
+                # 获取CPU核心数
+                cpu_count = {
+                    "physical": psutil.cpu_count(logical=False),
+                    "logical": psutil.cpu_count(logical=True)
+                }
+                
+                # 提取每个核心的使用率
+                per_core_usage = []
+                core_idle_times = {}
+                core_total_times = {}
+                
+                for line in metrics.split('\n'):
+                    if line.startswith('node_cpu_seconds_total{'):
+                        match = re.search(r'node_cpu_seconds_total\{cpu="(\d+)", mode="([^"]+)"\} (\d+\.\d+)', line)
+                        if match:
+                            core = match.group(1)
+                            mode = match.group(2)
+                            value = float(match.group(3))
+                            
+                            if core not in core_total_times:
+                                core_total_times[core] = 0
+                            core_total_times[core] += value
+                            
+                            if mode == 'idle':
+                                core_idle_times[core] = value
+                
+                for core in sorted(core_idle_times.keys()):
+                    if core in core_total_times and core_total_times[core] > 0:
+                        core_usage = (1 - core_idle_times[core] / core_total_times[core]) * 100
+                        per_core_usage.append(core_usage)
+                
+                return {
+                    "total_usage": cpu_usage,
+                    "per_core_usage": per_core_usage,
+                    "cpu_count": cpu_count
+                }
+        except Exception as e:
+            print(f"从nas-node-exporter获取CPU信息失败: {e}")
+        
+        # 如果从nas-node-exporter获取失败，使用本地获取
         # 获取CPU使用率
         cpu_usage = psutil.cpu_percent(interval=1)
         
@@ -120,6 +230,81 @@ def get_cpu_info():
 # 获取内存使用率
 def get_memory_info():
     try:
+        # 尝试从nas-node-exporter获取内存信息
+        try:
+            response = requests.get('http://nas-node-exporter:9100/metrics')
+            if response.status_code == 200:
+                # 解析metrics获取内存信息
+                metrics = response.text
+                
+                # 提取内存信息
+                import re
+                
+                # 提取总内存
+                total_memory_match = re.search(r'node_memory_MemTotal_bytes (\d+)', metrics)
+                if total_memory_match:
+                    total_memory = int(total_memory_match.group(1))
+                else:
+                    total_memory = 0
+                
+                # 提取可用内存
+                available_memory_match = re.search(r'node_memory_MemAvailable_bytes (\d+)', metrics)
+                if available_memory_match:
+                    available_memory = int(available_memory_match.group(1))
+                else:
+                    available_memory = 0
+                
+                # 计算已用内存
+                used_memory = total_memory - available_memory
+                
+                # 计算内存使用率
+                if total_memory > 0:
+                    memory_percent = (used_memory / total_memory) * 100
+                else:
+                    memory_percent = 0
+                
+                # 提取交换内存信息
+                # 提取总交换内存
+                total_swap_match = re.search(r'node_memory_SwapTotal_bytes (\d+)', metrics)
+                if total_swap_match:
+                    total_swap = int(total_swap_match.group(1))
+                else:
+                    total_swap = 0
+                
+                # 提取可用交换内存
+                free_swap_match = re.search(r'node_memory_SwapFree_bytes (\d+)', metrics)
+                if free_swap_match:
+                    free_swap = int(free_swap_match.group(1))
+                else:
+                    free_swap = 0
+                
+                # 计算已用交换内存
+                used_swap = total_swap - free_swap
+                
+                # 计算交换内存使用率
+                if total_swap > 0:
+                    swap_percent = (used_swap / total_swap) * 100
+                else:
+                    swap_percent = 0
+                
+                return {
+                    "memory": {
+                        "total": total_memory,
+                        "available": available_memory,
+                        "used": used_memory,
+                        "percent": memory_percent
+                    },
+                    "swap": {
+                        "total": total_swap,
+                        "used": used_swap,
+                        "free": free_swap,
+                        "percent": swap_percent
+                    }
+                }
+        except Exception as e:
+            print(f"从nas-node-exporter获取内存信息失败: {e}")
+        
+        # 如果从nas-node-exporter获取失败，使用本地获取
         # 获取内存信息
         memory = psutil.virtual_memory()
         
@@ -161,6 +346,65 @@ def get_memory_info():
 # 获取磁盘使用率
 def get_disk_info():
     try:
+        # 尝试从nas-node-exporter获取磁盘信息
+        try:
+            response = requests.get('http://nas-node-exporter:9100/metrics')
+            if response.status_code == 200:
+                # 解析metrics获取磁盘信息
+                metrics = response.text
+                
+                # 提取磁盘信息
+                import re
+                
+                # 提取挂载点
+                mountpoints = {}
+                
+                # 提取文件系统大小
+                for line in metrics.split('\n'):
+                    if line.startswith('node_filesystem_size_bytes{'):
+                        match = re.search(r'node_filesystem_size_bytes\{mountpoint="([^"]+)",[^}]+\} (\d+)', line)
+                        if match:
+                            mountpoint = match.group(1)
+                            size = int(match.group(2))
+                            if mountpoint not in mountpoints:
+                                mountpoints[mountpoint] = {
+                                    "mountpoint": mountpoint,
+                                    "total": size,
+                                    "used": 0,
+                                    "percent": 0
+                                }
+                
+                # 提取文件系统已用空间
+                for line in metrics.split('\n'):
+                    if line.startswith('node_filesystem_files{'):
+                        match = re.search(r'node_filesystem_files\{mountpoint="([^"]+)",[^}]+\} (\d+)', line)
+                        if match:
+                            mountpoint = match.group(1)
+                            if mountpoint in mountpoints:
+                                # 这里提取的是文件数，不是字节数，需要重新提取
+                                pass
+                    elif line.startswith('node_filesystem_size_bytes{'):
+                        # 已经处理过了
+                        pass
+                    elif line.startswith('node_filesystem_avail_bytes{'):
+                        match = re.search(r'node_filesystem_avail_bytes\{mountpoint="([^"]+)",[^}]+\} (\d+)', line)
+                        if match:
+                            mountpoint = match.group(1)
+                            avail = int(match.group(2))
+                            if mountpoint in mountpoints:
+                                total = mountpoints[mountpoint]['total']
+                                used = total - avail
+                                percent = (used / total) * 100 if total > 0 else 0
+                                mountpoints[mountpoint]['used'] = used
+                                mountpoints[mountpoint]['percent'] = percent
+                
+                # 转换为列表
+                disk_info = list(mountpoints.values())
+                return disk_info
+        except Exception as e:
+            print(f"从nas-node-exporter获取磁盘信息失败: {e}")
+        
+        # 如果从nas-node-exporter获取失败，使用本地获取
         # 获取所有磁盘分区
         partitions = psutil.disk_partitions()
         disk_info = []
@@ -194,6 +438,134 @@ def get_disk_info():
 # 获取网络流量
 def get_network_info():
     try:
+        # 尝试从nas-node-exporter获取网络信息
+        try:
+            response = requests.get('http://nas-node-exporter:9100/metrics')
+            if response.status_code == 200:
+                # 解析metrics获取网络信息
+                metrics = response.text
+                
+                # 提取网络流量信息
+                import re
+                
+                # 提取总网络流量
+                bytes_sent = 0
+                bytes_recv = 0
+                packets_sent = 0
+                packets_recv = 0
+                errin = 0
+                errout = 0
+                dropin = 0
+                dropout = 0
+                
+                # 提取每个接口的流量
+                for line in metrics.split('\n'):
+                    if line.startswith('node_network_transmit_bytes_total{'):
+                        match = re.search(r'node_network_transmit_bytes_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            bytes_sent += int(match.group(1))
+                    elif line.startswith('node_network_receive_bytes_total{'):
+                        match = re.search(r'node_network_receive_bytes_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            bytes_recv += int(match.group(1))
+                    elif line.startswith('node_network_transmit_packets_total{'):
+                        match = re.search(r'node_network_transmit_packets_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            packets_sent += int(match.group(1))
+                    elif line.startswith('node_network_receive_packets_total{'):
+                        match = re.search(r'node_network_receive_packets_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            packets_recv += int(match.group(1))
+                    elif line.startswith('node_network_receive_errs_total{'):
+                        match = re.search(r'node_network_receive_errs_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            errin += int(match.group(1))
+                    elif line.startswith('node_network_transmit_errs_total{'):
+                        match = re.search(r'node_network_transmit_errs_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            errout += int(match.group(1))
+                    elif line.startswith('node_network_receive_drop_total{'):
+                        match = re.search(r'node_network_receive_drop_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            dropin += int(match.group(1))
+                    elif line.startswith('node_network_transmit_drop_total{'):
+                        match = re.search(r'node_network_transmit_drop_total\{[^}]+\} (\d+)', line)
+                        if match:
+                            dropout += int(match.group(1))
+                
+                # 提取网络接口信息
+                interfaces = []
+                interface_names = set()
+                
+                # 提取接口名称
+                for line in metrics.split('\n'):
+                    if line.startswith('node_network_info{'):
+                        match = re.search(r'node_network_info\{device="([^"]+)",[^}]+\}', line)
+                        if match:
+                            interface_names.add(match.group(1))
+                
+                # 提取每个接口的详细信息
+                for interface_name in interface_names:
+                    # 提取接口状态
+                    is_up = True
+                    up_match = re.search(rf'node_network_up\{{device="{interface_name}"}} (\d+)', metrics)
+                    if up_match:
+                        is_up = int(up_match.group(1)) == 1
+                    
+                    # 提取接口速度
+                    speed = 0
+                    speed_match = re.search(rf'node_network_speed_bytes\{{device="{interface_name}"}} (\d+)', metrics)
+                    if speed_match:
+                        speed = int(speed_match.group(1))
+                    
+                    # 提取MTU
+                    mtu = 0
+                    mtu_match = re.search(rf'node_network_mtu_bytes\{{device="{interface_name}"}} (\d+)', metrics)
+                    if mtu_match:
+                        mtu = int(mtu_match.group(1))
+                    
+                    # 提取MAC地址和IP地址（这里需要从本地获取，因为node-exporter不提供这些信息）
+                    mac_address = ""
+                    ip_addresses = []
+                    
+                    # 从本地获取MAC地址和IP地址
+                    try:
+                        net_if_addrs = psutil.net_if_addrs()
+                        if interface_name in net_if_addrs:
+                            for addr in net_if_addrs[interface_name]:
+                                if addr.family == socket.AF_INET:
+                                    ip_addresses.append({"ip": addr.address})
+                                elif hasattr(socket, 'AF_PACKET') and addr.family == socket.AF_PACKET:
+                                    mac_address = addr.address
+                    except:
+                        pass
+                    
+                    interfaces.append({
+                        "name": interface_name,
+                        "mac_address": mac_address,
+                        "is_up": is_up,
+                        "speed": speed,
+                        "mtu": mtu,
+                        "ip_addresses": ip_addresses
+                    })
+                
+                return {
+                    "traffic": {
+                        "bytes_sent": bytes_sent,
+                        "bytes_recv": bytes_recv,
+                        "packets_sent": packets_sent,
+                        "packets_recv": packets_recv,
+                        "errin": errin,
+                        "errout": errout,
+                        "dropin": dropin,
+                        "dropout": dropout
+                    },
+                    "interfaces": interfaces
+                }
+        except Exception as e:
+            print(f"从nas-node-exporter获取网络信息失败: {e}")
+        
+        # 如果从nas-node-exporter获取失败，使用本地获取
         # 获取网络接口信息
         net_io = psutil.net_io_counters()
         
@@ -269,6 +641,85 @@ def get_network_info():
 # 获取Docker信息
 def get_docker_info():
     try:
+        # 尝试从nas-cadvisor获取Docker信息
+        try:
+            response = requests.get('http://nas-cadvisor:8080/api/v1.3/containers')
+            if response.status_code == 200:
+                # 解析cAdvisor API响应获取Docker信息
+                containers_data = response.json()
+                
+                # 提取容器信息
+                containers = []
+                stats = []
+                
+                for container in containers_data:
+                    # 跳过非Docker容器
+                    if 'aliases' not in container:
+                        continue
+                    
+                    # 提取容器名称
+                    container_name = container['aliases'][0] if container['aliases'] else container['name']
+                    
+                    # 提取容器状态
+                    container_status = "running"  # cAdvisor API没有直接提供状态信息，假设都是运行中的
+                    
+                    # 提取镜像信息
+                    image_name = ""
+                    if 'image' in container:
+                        image_name = container['image']
+                    
+                    # 提取容器ID
+                    container_id = container['name'].split('/')[-1]
+                    
+                    containers.append({
+                        "id": container_id,
+                        "name": container_name,
+                        "status": container_status,
+                        "image": image_name
+                    })
+                    
+                    # 提取容器状态信息
+                    if 'stats' in container and container['stats']:
+                        latest_stats = container['stats'][-1]
+                        
+                        # 提取CPU使用率
+                        cpu_usage = 0
+                        if 'cpu' in latest_stats and 'usage' in latest_stats['cpu']:
+                            cpu_usage = latest_stats['cpu']['usage']['total'] / 10000000.0  # 转换为百分比
+                        
+                        # 提取内存使用率
+                        memory_usage = 0
+                        memory_limit = 0
+                        if 'memory' in latest_stats and 'usage' in latest_stats['memory']:
+                            memory_usage = latest_stats['memory']['usage']['usage']
+                            memory_limit = latest_stats['memory']['usage']['limit']
+                        
+                        stats.append({
+                            "name": container_name,
+                            "cpu_usage": cpu_usage,
+                            "memory_usage": memory_usage,
+                            "memory_limit": memory_limit
+                        })
+                
+                # 提取镜像信息（这里使用本地docker_client获取，因为cAdvisor API不提供镜像列表）
+                images = []
+                if docker_client is not None:
+                    for image in docker_client.images.list():
+                        images.append({
+                            "id": image.id,
+                            "tags": image.tags,
+                            "size": f"{image.attrs['Size'] / (1024 * 1024):.0f}MB"
+                        })
+                
+                return {
+                    "containers": containers,
+                    "images": images,
+                    "stats": stats
+                }
+        except Exception as e:
+            print(f"从nas-cadvisor获取Docker信息失败: {e}")
+        
+        # 如果从nas-cadvisor获取失败，使用本地docker_client获取
         if docker_client is None:
             return {
                 "containers": [],
