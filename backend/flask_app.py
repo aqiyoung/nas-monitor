@@ -204,21 +204,25 @@ def get_network_info():
         
         for interface_name, addresses in net_if_addrs.items():
             if interface_name in net_if_stats:
-                status = "up" if net_if_stats[interface_name].isup else "down"
-                ip = ""
-                mac = ""
+                is_up = net_if_stats[interface_name].isup
+                speed = net_if_stats[interface_name].speed
+                mtu = net_if_stats[interface_name].mtu
+                mac_address = ""
+                ip_addresses = []
                 
                 for addr in addresses:
                     if addr.family == socket.AF_INET:
-                        ip = addr.address
+                        ip_addresses.append({"ip": addr.address})
                     elif hasattr(socket, 'AF_PACKET') and addr.family == socket.AF_PACKET:
-                        mac = addr.address
+                        mac_address = addr.address
                 
                 interfaces.append({
                     "name": interface_name,
-                    "ip": ip,
-                    "mac": mac,
-                    "status": status
+                    "mac_address": mac_address,
+                    "is_up": is_up,
+                    "speed": speed,
+                    "mtu": mtu,
+                    "ip_addresses": ip_addresses
                 })
         
         return {
@@ -251,9 +255,13 @@ def get_network_info():
             "interfaces": [
                 {
                     "name": "eth0",
-                    "ip": "192.168.1.100",
-                    "mac": "00:11:22:33:44:55",
-                    "status": "up"
+                    "mac_address": "00:11:22:33:44:55",
+                    "is_up": True,
+                    "speed": 1000,
+                    "mtu": 1500,
+                    "ip_addresses": [
+                        {"ip": "192.168.1.100"}
+                    ]
                 }
             ]
         }
