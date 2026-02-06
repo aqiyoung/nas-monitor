@@ -147,18 +147,19 @@ onMounted(() => {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #f0f2f5;
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
 /* 侧边栏样式 */
 .sidebar {
-  background: linear-gradient(135deg, #001529 0%, #002140 100%);
-  color: white;
+  background-color: #ffffff;
+  color: #303133;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   z-index: 100;
+  border-right: 1px solid #e8e8e8;
 }
 
 .sidebar.collapsed {
@@ -171,7 +172,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e8e8e8;
   padding: 0 20px;
   transition: all 0.3s ease;
 }
@@ -184,12 +185,8 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: white;
+  color: #409EFF;
   transition: all 0.3s ease;
-  background: linear-gradient(90deg, #409EFF 0%, #69c0ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .sidebar.collapsed .logo h1 {
@@ -203,7 +200,7 @@ onMounted(() => {
 }
 
 .el-menu-item {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: #606266 !important;
   height: 56px !important;
   line-height: 56px !important;
   margin: 4px 8px !important;
@@ -213,12 +210,13 @@ onMounted(() => {
 }
 
 .el-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: #f5f7fa !important;
   border-color: rgba(64, 158, 255, 0.3) !important;
+  color: #409EFF !important;
 }
 
 .el-menu-item.is-active {
-  background-color: rgba(64, 158, 255, 0.2) !important;
+  background-color: #ecf5ff !important;
   border-color: #409EFF !important;
   color: #409EFF !important;
 }
@@ -317,10 +315,7 @@ onMounted(() => {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
-  background-color: #f0f2f5;
-  background-image: 
-    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
-  background-size: 20px 20px;
+  background-color: #ffffff;
   transition: all 0.3s ease;
 }
 

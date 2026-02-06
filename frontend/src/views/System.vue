@@ -360,139 +360,298 @@ onUnmounted(() => {
 }
 
 .system-info-card {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.system-info-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .system-info {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-item:hover {
+  background-color: #f0f9ff;
+  box-shadow: 0 2px 8px 0 rgba(64, 158, 255, 0.15);
 }
 
 .label {
   font-size: 14px;
   color: #606266;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .value {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   color: #303133;
+  line-height: 1.4;
 }
 
 .metric-card {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 20px;
+  height: 60px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
 }
 
 .cpu-info {
-  padding: 10px 0;
+  padding: 20px;
 }
 
 .cpu-total {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .cpu-cores {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .core-item {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .core-label {
   font-size: 14px;
   color: #606266;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   display: block;
+  font-weight: 500;
 }
 
 .memory-info {
-  padding: 10px 0;
+  padding: 20px;
 }
 
 .memory-total {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .memory-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
 }
 
 .memory-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.memory-item .label {
+  margin-bottom: 0;
+}
+
+.memory-item .value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #409EFF;
 }
 
 .disk-info {
-  padding: 10px 0;
+  padding: 20px;
 }
 
 .disk-item {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.disk-item:hover {
+  background-color: #f0f9ff;
+  box-shadow: 0 2px 8px 0 rgba(64, 158, 255, 0.15);
 }
 
 .disk-label {
   font-size: 14px;
   color: #606266;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  font-weight: 500;
 }
 
 .disk-details {
-  font-size: 12px;
+  font-size: 14px;
   color: #909399;
-  margin-top: 5px;
+  margin-top: 8px;
+  text-align: right;
 }
 
 .smart-info {
-  padding: 10px 0;
+  padding: 20px;
 }
 
 .disk-smart-details {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
 }
 
 .smart-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.smart-item:last-child {
+  border-bottom: none;
+}
+
+.smart-item .label {
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+.smart-item .value {
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .smart-attributes {
-  margin-top: 20px;
+  margin-top: 30px;
+}
+
+.smart-attributes h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 16px;
 }
 
 .status-ok {
   color: #67C23A;
+  font-weight: 600;
 }
 
 .status-warning {
   color: #E6A23C;
+  font-weight: 600;
 }
 
 .status-error {
   color: #F56C6C;
+  font-weight: 600;
+}
+
+/* 自定义进度条样式 */
+:deep(.el-progress-bar__outer) {
+  height: 10px;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+:deep(.el-progress-bar__inner) {
+  border-radius: 5px;
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* CPU核心进度条颜色 */
+.core-item :deep(.el-progress-bar__inner) {
+  background-color: #409EFF;
+}
+
+/* 内存进度条颜色 */
+.memory-total :deep(.el-progress-bar__inner) {
+  background-color: #67C23A;
+}
+
+/* 磁盘进度条颜色 */
+.disk-item :deep(.el-progress-bar__inner) {
+  background-color: #E6A23C;
 }
 
 @media (max-width: 768px) {
   .system-info {
     grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .info-item {
+    padding: 12px;
+  }
+  
+  .card-header {
+    padding: 0 16px;
+    height: 52px;
+  }
+  
+  .cpu-info,
+  .memory-info,
+  .disk-info,
+  .smart-info {
+    padding: 16px;
+  }
+  
+  .disk-smart-details {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .system-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-item {
+    padding: 12px;
+  }
+  
+  .value {
+    font-size: 16px;
   }
 }
 </style>
