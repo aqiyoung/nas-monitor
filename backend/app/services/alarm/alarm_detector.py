@@ -5,6 +5,9 @@ from app.models.alarm.alarm_models import AlarmConfig, AlarmRecord
 from app.services.system_service import get_cpu_usage, get_memory_usage, get_disk_usage
 from app.services.docker_service import get_containers
 from app.services.alarm.alarm_storage import storage
+from app.services.alarm.alarm_aggregator import alarm_aggregator
+from app.services.notification.notification_service import notification_service
+from app.services.websocket.websocket_service import send_alert_notification
 
 class AlarmDetector:
     """告警检测服务"""
@@ -45,7 +48,7 @@ class AlarmDetector:
         # 检查最近的指标是否都超过阈值
         return all(m["value"] > threshold for m in recent_metrics[-3:])  # 检查最近3个记录
     
-    def detect_system_alerts(self):
+    async def detect_system_alerts(self):
         """检测系统告警"""
         # 获取系统指标
         cpu_usage = get_cpu_usage()
@@ -70,7 +73,7 @@ class AlarmDetector:
                 config.threshold, 
                 config.duration
             ):
-                self._create_alarm_record(
+                await self._create_alarm_record(
                     alarm_type="system",
                     sub_type="cpu_high",
                     severity=config.severity,
@@ -86,7 +89,7 @@ class AlarmDetector:
                 config.threshold, 
                 config.duration
             ):
-                self._create_alarm_record(
+                await self._create_alarm_record(
                     alarm_type="system",
                     sub_type="memory_low",
                     severity=config.severity,
@@ -98,7 +101,7 @@ class AlarmDetector:
         for config in [c for c in system_configs if c.sub_type == "disk_low"]:
             for disk in disk_usage:
                 if disk["percent"] > config.threshold:
-                    self._create_alarm_record(
+                    await self._create_alarm_record(
                         alarm_type="system",
                         sub_type="disk_low",
                         severity=config.severity,
@@ -106,7 +109,7 @@ class AlarmDetector:
                         details={"disk": disk}
                     )
     
-    def detect_docker_alerts(self):
+    async def detect_docker_alerts(self):
         """检测Docker告警"""
         # 获取Docker容器
         containers = get_containers()
@@ -121,7 +124,7 @@ class AlarmDetector:
         for config in [c for c in docker_configs if c.sub_type == "container_exited"]:
             for container in containers:
                 if container["status"] != "running":
-                    self._create_alarm_record(
+                    await self._create_alarm_record(
                         alarm_type="docker",
                         sub_type="container_exited",
                         severity=config.severity,
@@ -129,7 +132,7 @@ class AlarmDetector:
                         details={"container": container}
                     )
     
-    def detect_network_alerts(self, client_ip: str = None):
+    async def detect_network_alerts(self, client_ip: str = None):
         """检测网络告警"""
         if client_ip:
             # 获取网络告警配置
@@ -142,7 +145,7 @@ class AlarmDetector:
             for config in [c for c in network_configs if c.sub_type == "external_ip"]:
                 access_ip = storage.get_access_ip(client_ip)
                 if access_ip and access_ip.is_blacklisted:
-                    self._create_alarm_record(
+                    await self._create_alarm_record(
                         alarm_type="network",
                         sub_type="external_ip",
                         severity=config.severity,
@@ -150,8 +153,8 @@ class AlarmDetector:
                         details={"ip_address": client_ip, "ip_info": access_ip.dict()}
                     )
     
-    def _create_alarm_record(self, alarm_type: str, sub_type: str, severity: str, message: str, details: Dict):
-        """创建告警记录"""
+    async def _create_alarm_record(self, alarm_type: str, sub_type: str, severity: str, message: str, details: Dict):
+        """创建告警记录并发送通知"""
         # 检查是否已有相同类型的未处理告警
         existing_records = storage.get_alarm_records(limit=10)
         for record in existing_records:
@@ -170,15 +173,38 @@ class AlarmDetector:
             details=details
         )
         
+        # 使用告警聚合器处理
+        aggregated_record = alarm_aggregator.add_alarm(record)
+        
+        # 如果返回了聚合后的告警记录，则使用聚合后的记录
+        if aggregated_record:
+            record = aggregated_record
+        
+        # 保存告警记录
         storage.create_alarm_record(record)
-        print(f"Created alarm: {message}")
+        print(f"Created alarm: {record.message}")
+        
+        # 发送通知
+        await notification_service.send_notification(record.message, record.severity)
+        
+        # 通过WebSocket发送告警通知
+        await send_alert_notification({
+            "id": record.id,
+            "alarm_type": record.alarm_type,
+            "sub_type": record.sub_type,
+            "severity": record.severity,
+            "message": record.message,
+            "details": record.details,
+            "timestamp": record.timestamp.isoformat()
+        })
+
     
-    def run_detection(self, client_ip: str = None):
+    async def run_detection(self, client_ip: str = None):
         """运行所有告警检测"""
-        self.detect_system_alerts()
-        self.detect_docker_alerts()
+        await self.detect_system_alerts()
+        await self.detect_docker_alerts()
         if client_ip:
-            self.detect_network_alerts(client_ip)
+            await self.detect_network_alerts(client_ip)
 
 # 创建全局告警检测器实例
 alarm_detector = AlarmDetector()

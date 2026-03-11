@@ -1,11 +1,21 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import system, network, io, docker, auth, user, alarm
+from app.api import system, network, io, docker, auth, user, alarm, notification, websocket
 from app.api.auth import get_current_active_user
 # 导入并初始化定时任务服务
 import app.services.alarm.scheduler_service
+# 导入并初始化通知服务
+import app.services.notification.notification_service
+import app.services.notification.telegram_provider
+import app.services.notification.feishu_provider
+# 导入并初始化WebSocket服务
+import app.services.websocket.websocket_service
+from app.services.websocket.realtime_data_service import start_realtime_data_task
 
 app = FastAPI(title="NAS Monitor API", version="1.1.0")
+
+# 启动实时数据推送任务
+start_realtime_data_task()
 
 # 配置 CORS
 app.add_middleware(
@@ -26,6 +36,10 @@ app.include_router(io, prefix="/api/io", tags=["io"], dependencies=[Depends(get_
 app.include_router(docker, prefix="/api/docker", tags=["docker"], dependencies=[Depends(get_current_active_user)])
 app.include_router(alarm, prefix="/api/alarm", tags=["alarm"], dependencies=[Depends(get_current_active_user)])
 app.include_router(user, prefix="/api/user", tags=["user"], dependencies=[Depends(get_current_active_user)])
+app.include_router(notification, prefix="/api/notification", tags=["notification"], dependencies=[Depends(get_current_active_user)])
+
+# 注册WebSocket路由
+app.include_router(websocket, tags=["websocket"])
 
 @app.get("/")
 async def root():

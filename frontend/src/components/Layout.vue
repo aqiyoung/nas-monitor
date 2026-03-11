@@ -47,6 +47,12 @@
           </template>
           <span>告警管理</span>
         </el-menu-item>
+        <el-menu-item index="/notification">
+          <template #icon>
+            <el-icon><Bell /></el-icon>
+          </template>
+          <span>通知管理</span>
+        </el-menu-item>
         <el-menu-item index="/monitoring">
           <template #icon>
             <el-icon><DataAnalysis /></el-icon>
@@ -102,6 +108,7 @@ import {
   DataAnalysis,
   Box,
   WarningFilled,
+  Bell,
   Menu,
   User
 } from '@element-plus/icons-vue'

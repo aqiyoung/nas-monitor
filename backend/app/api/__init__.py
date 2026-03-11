@@ -5,8 +5,9 @@ from .docker import router as docker_router
 from .auth import router as auth_router
 from .user import router as user_router
 from .alarm.alarm import router as alarm_router
+from .notification.notification import router as notification_router
 
-__all__ = ['system', 'network', 'io', 'docker', 'auth', 'user', 'alarm']
+__all__ = ['system', 'network', 'io', 'docker', 'auth', 'user', 'alarm', 'notification']
 
 system = system_router
 network = network_router
@@ -15,3 +16,4 @@ docker = docker_router
 auth = auth_router
 user = user_router
 alarm = alarm_router
+notification = notification_router

@@ -140,7 +140,7 @@ async def manual_detect_alerts(
     current_user: dict = Depends(get_current_active_user)
 ):
     """手动触发告警检测"""
-    alarm_detector.run_detection(client_ip)
+    await alarm_detector.run_detection(client_ip)
     return {"message": "告警检测已触发"}
 
 # 获取默认告警配置

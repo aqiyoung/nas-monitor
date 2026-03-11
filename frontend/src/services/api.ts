@@ -144,4 +144,35 @@ export const influxdbApi = {
   }
 }
 
+// 通知相关API
+export const notificationApi = {
+  getChannels: () => {
+    return api.get('/notification/channels')
+  },
+  getChannel: (channel_id: string) => {
+    return api.get(`/notification/channels/${channel_id}`)
+  },
+  createChannel: (data: any) => {
+    return api.post('/notification/channels', data)
+  },
+  updateChannel: (channel_id: string, data: any) => {
+    return api.put(`/notification/channels/${channel_id}`, data)
+  },
+  deleteChannel: (channel_id: string) => {
+    return api.delete(`/notification/channels/${channel_id}`)
+  },
+  getPreferences: () => {
+    return api.get('/notification/preferences')
+  },
+  getPreference: (user_id: string) => {
+    return api.get(`/notification/preferences/${user_id}`)
+  },
+  createPreference: (data: any) => {
+    return api.post('/notification/preferences', data)
+  },
+  updatePreference: (user_id: string, data: any) => {
+    return api.put(`/notification/preferences/${user_id}`, data)
+  }
+}
+
 export default api

@@ -1,7 +1,8 @@
 services:
   # 后端FastAPI服务
   backend:
-    image: ghcr.io/aqiyoung/nas-monitor-backend:latest
+    build:
+      context: ./backend
     container_name: nas-monitor-backend
     ports:
       - "8017:8017"
@@ -24,7 +25,8 @@ services:
 
   # 前端Vue应用
   frontend:
-    image: ghcr.io/aqiyoung/nas-monitor-frontend:latest
+    build:
+      context: ./frontend
     container_name: nas-monitor-frontend
     ports:
       - "3003:80"
