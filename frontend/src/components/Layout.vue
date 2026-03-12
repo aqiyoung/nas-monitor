@@ -3,7 +3,7 @@
     <!-- 侧边栏 -->
     <el-aside width="200px" class="sidebar">
       <div class="logo">
-        <h1>NAS Monitor</h1>
+        <h1>运维监控中心</h1>
       </div>
       <el-menu
         :default-active="activeMenu"

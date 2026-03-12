@@ -323,10 +323,10 @@ def setup_system_service():
         return True
     
     # 创建服务文件
-    service_file = "/etc/systemd/system/nas-monitor-backend.service"
+    service_file = "/etc/systemd/system/ops-monitor-backend.service"
     service_content = f"""
 [Unit]
-Description=NAS Monitor Backend Service
+Description=运维监控中心后端服务
 After=network.target
 
 [Service]
@@ -344,8 +344,8 @@ WantedBy=multi-user.target
             f.write(service_content)
         
         # 启用服务
-        run_command("systemctl enable nas-monitor-backend")
-        run_command("systemctl start nas-monitor-backend")
+        run_command("systemctl enable ops-monitor-backend")
+        run_command("systemctl start ops-monitor-backend")
         
         print_success("系统服务设置成功")
         return True
@@ -355,7 +355,7 @@ WantedBy=multi-user.target
 
 def main():
     """主函数"""
-    print_color("飞牛NAS监控系统安装脚本", Colors.HEADER)
+    print_color("飞牛运维监控中心安装脚本", Colors.HEADER)
     print_color("=" * 40, Colors.HEADER)
     
     # 检查系统环境
@@ -386,10 +386,10 @@ def main():
     print("后端服务地址: http://localhost:8017")
     print("前端访问地址: http://localhost")
     print("\n使用以下命令管理服务:")
-    print("  sudo systemctl start nas-monitor-backend   # 启动服务")
-    print("  sudo systemctl stop nas-monitor-backend    # 停止服务")
-    print("  sudo systemctl restart nas-monitor-backend # 重启服务")
-    print("  sudo systemctl status nas-monitor-backend  # 查看状态")
+    print("  sudo systemctl start ops-monitor-backend   # 启动服务")
+    print("  sudo systemctl stop ops-monitor-backend    # 停止服务")
+    print("  sudo systemctl restart ops-monitor-backend # 重启服务")
+    print("  sudo systemctl status ops-monitor-backend  # 查看状态")
     
     return 0
 

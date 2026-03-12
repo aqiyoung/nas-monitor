@@ -1,5 +1,5 @@
-# Feiniu NAS Monitor Deployment Script (PowerShell Version)
-# This script allows you to quickly deploy the complete monitoring system
+# 飞牛运维监控中心部署脚本 (PowerShell 版本)
+# 通过此脚本可以快速部署完整的监控系统
 
 # Log file
 $LOG_FILE = "nas-monitor-deploy.log"
@@ -29,16 +29,16 @@ if (-not $isAdmin) {
 }
 
 Write-Host "=====================================================" -ForegroundColor Cyan
-Write-Host "Feiniu NAS Monitor Deployment Script (PowerShell Version)" -ForegroundColor Green
+Write-Host "飞牛运维监控中心部署脚本 (PowerShell 版本)" -ForegroundColor Green
 Write-Host "=====================================================" -ForegroundColor Cyan
-Write-Host "Log file: $LOG_FILE" -ForegroundColor Yellow
+Write-Host "日志文件: $LOG_FILE" -ForegroundColor Yellow
 
 # Initialize log file
 "===============================================" | Out-File -FilePath $LOG_FILE -Force
-"Feiniu NAS Monitor Deployment Log" | Out-File -FilePath $LOG_FILE -Append
-"Start time: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")" | Out-File -FilePath $LOG_FILE -Append
+"飞牛运维监控中心部署日志" | Out-File -FilePath $LOG_FILE -Append
+"开始时间: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")" | Out-File -FilePath $LOG_FILE -Append
 "===============================================" | Out-File -FilePath $LOG_FILE -Append
-Write-Log "Starting Feiniu NAS Monitor deployment"
+Write-Log "开始部署飞牛运维监控中心"
 
 # Check system environment
 Write-Log "Checking system environment"
@@ -172,21 +172,21 @@ try {
     Write-Host "Project code cloning failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Log "Deployment completed"
+Write-Log "部署完成"
 Write-Host "`n=====================================================" -ForegroundColor Green
-Write-Host "Deployment completed!" -ForegroundColor Green
+Write-Host "部署完成！" -ForegroundColor Green
 Write-Host "=====================================================" -ForegroundColor Green
-Write-Host "Backend service address: http://localhost:8017" -ForegroundColor Blue
-Write-Host "Frontend access address: http://localhost" -ForegroundColor Blue
-Write-Host "`nUse the following commands to manage the service:" -ForegroundColor Yellow
-Write-Host "  python -m uvicorn main:app --host 0.0.0.0 --port 8017 # Start service"
-Write-Host "  Ctrl+C # Stop service"
-Write-Host "`nDeployment log saved to: $LOG_FILE" -ForegroundColor Yellow
-Write-Host "If deployment failed, please check the log file for details" -ForegroundColor Yellow
-Write-Host "`nEnjoy using Feiniu NAS Monitor!" -ForegroundColor Green
+Write-Host "后端服务地址: http://localhost:8017" -ForegroundColor Blue
+Write-Host "前端访问地址: http://localhost" -ForegroundColor Blue
+Write-Host "`n使用以下命令管理服务:" -ForegroundColor Yellow
+Write-Host "  python -m uvicorn main:app --host 0.0.0.0 --port 8017 # 启动服务"
+Write-Host "  Ctrl+C # 停止服务"
+Write-Host "`n部署日志已保存到: $LOG_FILE" -ForegroundColor Yellow
+Write-Host "如果部署失败，请查看日志文件了解详细原因" -ForegroundColor Yellow
+Write-Host "`n祝您使用愉快！" -ForegroundColor Green
 
-# Record deployment end time
-Write-Log "Deployment ended"
+# 记录部署结束时间
+Write-Log "部署结束"
 "===============================================" | Out-File -FilePath $LOG_FILE -Append
-"End time: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")" | Out-File -FilePath $LOG_FILE -Append
+"结束时间: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")" | Out-File -FilePath $LOG_FILE -Append
 "===============================================" | Out-File -FilePath $LOG_FILE -Append

@@ -1,5 +1,5 @@
 #!/usr/bin/env powershell
-# 飞牛NAS监控系统一键卸载脚本 (PowerShell版本)
+# 飞牛运维监控中心一键卸载脚本 (PowerShell版本)
 # 通过此脚本可以完全移除监控系统及其相关文件
 
 # 颜色代码
@@ -10,7 +10,7 @@ $BLUE = "`e[0;34m"
 $NC = "`e[0m" # No Color
 
 Write-Host -ForegroundColor Cyan "====================================================="
-Write-Host -ForegroundColor Green "飞牛NAS监控系统一键卸载脚本 (PowerShell版本)"
+Write-Host -ForegroundColor Green "飞牛运维监控中心一键卸载脚本 (PowerShell版本)"
 Write-Host -ForegroundColor Cyan "====================================================="
 
 # 停止服务
@@ -30,7 +30,13 @@ if ($uvicornProcesses) {
 # 移除项目文件
 Write-Host -ForegroundColor Yellow "
 移除项目文件..."
-if (Test-Path "nas-monitor") {
+if (Test-Path "ops-monitor") {
+    Remove-Item -Recurse -Force "ops-monitor"
+    Write-Host -ForegroundColor Green "项目文件已移除"
+} elseif (Test-Path "C:\opt\ops-monitor") {
+    Remove-Item -Recurse -Force "C:\opt\ops-monitor"
+    Write-Host -ForegroundColor Green "项目文件已移除"
+} elseif (Test-Path "nas-monitor") {
     Remove-Item -Recurse -Force "nas-monitor"
     Write-Host -ForegroundColor Green "项目文件已移除"
 } elseif (Test-Path "C:\opt\nas-monitor") {
@@ -50,9 +56,9 @@ Write-Host -ForegroundColor Green "
 ====================================================="
 Write-Host -ForegroundColor Green "卸载完成！"
 Write-Host -ForegroundColor Green "====================================================="
-Write-Host -ForegroundColor Blue "所有飞牛NAS监控系统相关的文件和服务已被移除"
+Write-Host -ForegroundColor Blue "所有飞牛运维监控中心相关的文件和服务已被移除"
 Write-Host -ForegroundColor Yellow "
 如果您想重新安装，可以使用以下命令:"
-Write-Host "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1"
+Write-Host "  Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1"
 Write-Host -ForegroundColor Green "
-感谢使用飞牛NAS监控系统！"
+感谢使用飞牛运维监控中心！"

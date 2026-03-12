@@ -1,5 +1,5 @@
 #!/bin/bash
-# 飞牛NAS监控系统一键部署脚本
+# 飞牛运维监控中心一键部署脚本
 # 通过此脚本可以快速部署完整的监控系统
 
 # 设置管道失败时立即退出
@@ -23,16 +23,16 @@ log() {
 }
 
 echo -e "${BLUE}=====================================================${NC}"
-echo -e "${GREEN}飞牛NAS监控系统一键部署脚本${NC}"
+echo -e "${GREEN}飞牛运维监控中心一键部署脚本${NC}"
 echo -e "${BLUE}=====================================================${NC}"
 echo -e "${YELLOW}日志文件: $LOG_FILE${NC}"
 
 # 初始化日志文件
 echo "===============================================" > "$LOG_FILE"
-echo "飞牛NAS监控系统部署日志" >> "$LOG_FILE"
+echo "飞牛运维监控中心部署日志" >> "$LOG_FILE"
 echo "开始时间: $(date +"%Y-%m-%d %H:%M:%S")" >> "$LOG_FILE"
 echo "===============================================" >> "$LOG_FILE"
-log "开始部署飞牛NAS监控系统"
+log "开始部署飞牛运维监控中心"
 
 # 检查系统环境
 log "检查系统环境"
@@ -211,10 +211,10 @@ echo -e "${GREEN}=====================================================${NC}"
 echo -e "${BLUE}后端服务地址: http://localhost:8017${NC}"
 echo -e "${BLUE}前端访问地址: http://localhost${NC}"
 echo -e "\n${YELLOW}使用以下命令管理服务:${NC}"
-echo -e "  sudo systemctl start nas-monitor-backend   # 启动服务"
-echo -e "  sudo systemctl stop nas-monitor-backend    # 停止服务"
-echo -e "  sudo systemctl restart nas-monitor-backend # 重启服务"
-echo -e "  sudo systemctl status nas-monitor-backend  # 查看状态"
+echo -e "  sudo systemctl start ops-monitor-backend   # 启动服务"
+echo -e "  sudo systemctl stop ops-monitor-backend    # 停止服务"
+echo -e "  sudo systemctl restart ops-monitor-backend # 重启服务"
+echo -e "  sudo systemctl status ops-monitor-backend  # 查看状态"
 echo -e "\n${YELLOW}部署日志已保存到: $LOG_FILE${NC}"
 echo -e "${YELLOW}如果部署失败，请查看日志文件了解详细原因${NC}"
 echo -e "\n${GREEN}祝您使用愉快！${NC}"

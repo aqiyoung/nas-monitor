@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-form-wrapper">
-      <h1 class="login-title">NAS Monitor</h1>
+      <h1 class="login-title">运维监控中心</h1>
       <h2 class="login-subtitle">登录系统</h2>
       
       <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-width="80px">

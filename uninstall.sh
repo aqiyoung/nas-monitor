@@ -1,5 +1,5 @@
 #!/bin/bash
-# 飞牛NAS监控系统一键卸载脚本
+# 飞牛运维监控中心一键卸载脚本
 # 通过此脚本可以完全移除监控系统及其相关服务
 
 # 颜色代码
@@ -10,15 +10,15 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=====================================================${NC}"
-echo -e "${GREEN}飞牛NAS监控系统一键卸载脚本${NC}"
+echo -e "${GREEN}飞牛运维监控中心一键卸载脚本${NC}"
 echo -e "${BLUE}=====================================================${NC}"
 
 # 停止服务
 echo -e "\n${YELLOW}停止服务...${NC}"
-if [ -f /etc/systemd/system/nas-monitor-backend.service ]; then
-    sudo systemctl stop nas-monitor-backend
-    sudo systemctl disable nas-monitor-backend
-    sudo rm /etc/systemd/system/nas-monitor-backend.service
+if [ -f /etc/systemd/system/ops-monitor-backend.service ]; then
+    sudo systemctl stop ops-monitor-backend
+    sudo systemctl disable ops-monitor-backend
+    sudo rm /etc/systemd/system/ops-monitor-backend.service
     sudo systemctl daemon-reload
     echo -e "${GREEN}后端服务已停止并移除${NC}"
 else
@@ -26,10 +26,10 @@ else
 fi
 
 # 移除Nginx配置
-if [ -f /etc/nginx/sites-available/nas-monitor ]; then
-    sudo rm /etc/nginx/sites-available/nas-monitor
-    if [ -f /etc/nginx/sites-enabled/nas-monitor ]; then
-        sudo rm /etc/nginx/sites-enabled/nas-monitor
+if [ -f /etc/nginx/sites-available/ops-monitor ]; then
+    sudo rm /etc/nginx/sites-available/ops-monitor
+    if [ -f /etc/nginx/sites-enabled/ops-monitor ]; then
+        sudo rm /etc/nginx/sites-enabled/ops-monitor
     fi
     sudo nginx -t && sudo systemctl reload nginx
     echo -e "${GREEN}Nginx配置已移除${NC}"
@@ -39,7 +39,13 @@ fi
 
 # 移除项目文件
 echo -e "\n${YELLOW}移除项目文件...${NC}"
-if [ -d "nas-monitor" ]; then
+if [ -d "ops-monitor" ]; then
+    sudo rm -rf ops-monitor
+    echo -e "${GREEN}项目文件已移除${NC}"
+elif [ -d "/opt/ops-monitor" ]; then
+    sudo rm -rf /opt/ops-monitor
+    echo -e "${GREEN}项目文件已移除${NC}"
+elif [ -d "nas-monitor" ]; then
     sudo rm -rf nas-monitor
     echo -e "${GREEN}项目文件已移除${NC}"
 elif [ -d "/opt/nas-monitor" ]; then
@@ -57,7 +63,7 @@ echo -e "\n${YELLOW}清理虚拟环境和依赖...${NC}"
 echo -e "\n${GREEN}=====================================================${NC}"
 echo -e "${GREEN}卸载完成！${NC}"
 echo -e "${GREEN}=====================================================${NC}"
-echo -e "${BLUE}所有飞牛NAS监控系统相关的文件和服务已被移除${NC}"
+echo -e "${BLUE}所有飞牛运维监控中心相关的文件和服务已被移除${NC}"
 echo -e "\n${YELLOW}如果您想重新安装，可以使用以下命令:${NC}"
-echo -e "  curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash"
-echo -e "\n${GREEN}感谢使用飞牛NAS监控系统！${NC}"
+echo -e "  curl -fsSL https://gitee.com/threely/nas-monitor/raw/main/deploy.sh | bash"
+echo -e "\n${GREEN}感谢使用飞牛运维监控中心！${NC}"
