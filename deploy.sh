@@ -151,27 +151,18 @@ if [ -d "nas-monitor" ]; then
     fi
 fi
 
-# 尝试从GitHub克隆项目
-log "开始从GitHub克隆项目: https://github.com/aqiyoung/nas-monitor.git"
-if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
-    log "从GitHub克隆项目成功"
-    echo -e "${GREEN}从GitHub克隆项目成功${NC}"
+# 从Gitee克隆项目
+log "开始从Gitee克隆项目: https://gitee.com/threely/nas-monitor.git"
+if git clone https://gitee.com/threely/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
+    log "从Gitee克隆项目成功"
+    echo -e "${GREEN}从Gitee克隆项目成功${NC}"
 else
-    # GitHub克隆失败，尝试从Gitee克隆
-    log "从GitHub克隆项目失败，尝试从Gitee克隆"
-    echo -e "${YELLOW}从GitHub克隆项目失败，尝试从Gitee克隆...${NC}"
-    log "开始从Gitee克隆项目: https://gitee.com/threely/nas-monitor.git"
-    if git clone https://gitee.com/threely/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
-        log "从Gitee克隆项目成功"
-        echo -e "${GREEN}从Gitee克隆项目成功${NC}"
-    else
-        log "项目代码克隆失败"
-        log "检查网络连接和仓库访问权限"
-        echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
-        echo -e "${YELLOW}可能的原因：网络连接问题、仓库访问限制、权限不足或磁盘空间不足${NC}"
-        echo -e "${YELLOW}请检查网络连接后重试${NC}"
-        exit 1
-    fi
+    log "项目代码克隆失败"
+    log "检查网络连接和仓库访问权限"
+    echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
+    echo -e "${YELLOW}可能的原因：网络连接问题、仓库访问限制、权限不足或磁盘空间不足${NC}"
+    echo -e "${YELLOW}请检查网络连接后重试${NC}"
+    exit 1
 fi
 cd nas-monitor
 log "进入项目目录: $(pwd)"

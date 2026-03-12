@@ -7,28 +7,12 @@
 ### 一键部署
 
 #### Linux/macOS (Bash)
-
-**从 GitHub 部署**
-```bash
-# 使用curl执行一键部署脚本
-curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
-```
-
-**从 Gitee 部署**
 ```bash
 # 使用curl执行一键部署脚本
 curl -fsSL https://gitee.com/threely/nas-monitor/raw/main/deploy.sh | bash
 ```
 
 #### Windows (PowerShell)
-
-**从 GitHub 部署**
-```powershell
-# 使用Invoke-WebRequest执行一键部署脚本
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
-```
-
-**从 Gitee 部署**
 ```powershell
 # 使用Invoke-WebRequest执行一键部署脚本
 Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
@@ -172,20 +156,20 @@ Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps
 #### Linux/macOS (Bash)
 ```bash
 # 使用curl执行一键部署脚本
-curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
+curl -fsSL https://gitee.com/threely/nas-monitor/raw/main/deploy.sh | bash
 ```
 
 #### Windows (PowerShell)
 ```powershell
 # 使用Invoke-WebRequest执行一键部署脚本
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
+Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
 ```
 
 ### 3. 部署过程说明
 
 #### 一键部署流程
 1. **环境检查**：脚本会自动检查系统环境，安装缺失的依赖项
-2. **代码克隆**：从 GitHub 克隆项目代码到本地
+2. **代码克隆**：从 Gitee 克隆项目代码到本地
 3. **依赖安装**：安装前端和后端的依赖项
 4. **服务配置**：配置系统服务（Linux/macOS）或启动服务（Windows）
 5. **启动服务**：启动前端和后端服务
