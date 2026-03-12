@@ -121,7 +121,21 @@
 
 ## 安装和运行
 
-### 1. 一键部署
+### 1. 部署前准备
+
+#### 系统要求
+- **Linux/macOS**：Debian/Ubuntu 18.04+ 或其他支持 Bash 的系统
+- **Windows**：Windows 10+，PowerShell 5.1+
+- **硬件要求**：至少 2GB 内存，500MB 可用磁盘空间
+- **网络要求**：能够访问互联网，用于下载依赖和更新
+
+#### 依赖项
+- **Git**：用于克隆项目代码
+- **Python 3.8+**：运行后端服务
+- **Node.js 16+**：构建前端项目
+- **Docker**（可选）：用于容器化部署
+
+### 2. 一键部署
 
 #### Linux/macOS (Bash)
 ```bash
@@ -135,7 +149,20 @@ curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
 ```
 
-### 2. 本地开发模式
+### 3. 部署过程说明
+
+#### 一键部署流程
+1. **环境检查**：脚本会自动检查系统环境，安装缺失的依赖项
+2. **代码克隆**：从 GitHub 克隆项目代码到本地
+3. **依赖安装**：安装前端和后端的依赖项
+4. **服务配置**：配置系统服务（Linux/macOS）或启动服务（Windows）
+5. **启动服务**：启动前端和后端服务
+
+#### 部署时间
+- 首次部署：约 5-10 分钟（取决于网络速度和系统性能）
+- 后续部署：约 2-3 分钟
+
+### 4. 本地开发模式
 
 #### 后端服务
 ```bash
@@ -151,13 +178,27 @@ npm install
 npm run dev
 ```
 
-### 3. Docker 部署
+### 5. Docker 部署
 
 ```bash
 docker compose up -d
 ```
 
-### 4. 一键卸载
+### 6. 部署后验证
+
+#### 服务状态检查
+- **后端服务**：访问 http://localhost:8017，应看到 API 文档页面
+- **前端服务**：访问 http://localhost，应看到监控平台登录页面
+- **服务管理**：
+  - Linux/macOS：使用 `sudo systemctl status nas-monitor-backend` 查看服务状态
+  - Windows：检查 Python 进程是否在运行
+
+#### 常见问题检查
+1. **端口占用**：确保 8017 端口未被其他服务占用
+2. **依赖安装失败**：检查网络连接，确保能够访问 PyPI 和 npm 源
+3. **服务启动失败**：查看服务日志，排查错误原因
+
+### 7. 一键卸载
 
 #### Linux/macOS (Bash)
 ```bash
@@ -176,6 +217,32 @@ cd nas-monitor
 # 执行卸载脚本
 ./uninstall.ps1
 ```
+
+### 8. 常见问题和解决方案
+
+#### 问题：部署脚本执行失败
+**解决方案**：
+- 检查网络连接是否正常
+- 确保以管理员/root 权限运行脚本
+- 查看错误信息，针对性解决
+
+#### 问题：服务启动后无法访问
+**解决方案**：
+- 检查防火墙设置，确保 8017 端口已开放
+- 检查服务是否正在运行
+- 尝试重启服务
+
+#### 问题：前端页面无法加载
+**解决方案**：
+- 检查后端服务是否正常运行
+- 清除浏览器缓存，重新访问
+- 检查前端构建是否成功
+
+#### 问题：Docker 部署失败
+**解决方案**：
+- 检查 Docker 是否正确安装
+- 确保 Docker 服务正在运行
+- 查看 Docker 日志，排查错误原因
 
 ## 访问地址
 
