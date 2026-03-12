@@ -97,8 +97,14 @@ def setup_backend():
     venv_path = os.path.join(BACKEND_DIR, 'venv')
     if not os.path.exists(venv_path):
         print("创建虚拟环境...")
-        # 使用python命令而不是python3，以兼容Windows环境
-        code = run_command("python -m venv venv", cwd=BACKEND_DIR)
+        # 根据操作系统选择正确的Python命令
+        import platform
+        if platform.system() == "Windows":
+            python_cmd = "python"
+        else:
+            # 在Linux系统上优先使用python3
+            python_cmd = "python3"
+        code = run_command(f"{python_cmd} -m venv venv", cwd=BACKEND_DIR)
         if code != 0:
             print_error("创建虚拟环境失败")
             return False
