@@ -116,9 +116,16 @@
 
 ### 1. 一键部署
 
+#### Linux/macOS (Bash)
 ```bash
 # 使用curl执行一键部署脚本
 curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
+```
+
+#### Windows (PowerShell)
+```powershell
+# 使用Invoke-WebRequest执行一键部署脚本
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
 ```
 
 ### 2. 本地开发模式
@@ -145,12 +152,22 @@ docker compose up -d
 
 ### 4. 一键卸载
 
+#### Linux/macOS (Bash)
 ```bash
 # 进入项目目录
 cd nas-monitor
 
 # 执行卸载脚本
 ./uninstall.sh
+```
+
+#### Windows (PowerShell)
+```powershell
+# 进入项目目录
+cd nas-monitor
+
+# 执行卸载脚本
+./uninstall.ps1
 ```
 
 ## 访问地址
