@@ -145,7 +145,8 @@ def setup_frontend():
     
     # 安装依赖
     print("安装前端依赖...")
-    code = run_command("npm install --production", cwd=FRONTEND_DIR)
+    # 移除--production标志，安装所有依赖（包括开发环境依赖）
+    code = run_command("npm install", cwd=FRONTEND_DIR)
     if code != 0:
         print_error("安装前端依赖失败")
         return False
