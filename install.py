@@ -97,7 +97,8 @@ def setup_backend():
     venv_path = os.path.join(BACKEND_DIR, 'venv')
     if not os.path.exists(venv_path):
         print("创建虚拟环境...")
-        code = run_command("python3 -m venv venv", cwd=BACKEND_DIR)
+        # 使用python命令而不是python3，以兼容Windows环境
+        code = run_command("python -m venv venv", cwd=BACKEND_DIR)
         if code != 0:
             print_error("创建虚拟环境失败")
             return False
@@ -107,7 +108,13 @@ def setup_backend():
     
     # 安装依赖
     print("安装后端依赖...")
-    code = run_command("./venv/bin/pip install -r requirements.txt", cwd=BACKEND_DIR)
+    # 根据操作系统选择正确的pip路径
+    import platform
+    if platform.system() == "Windows":
+        pip_path = ".\\venv\\Scripts\\pip"
+    else:
+        pip_path = "./venv/bin/pip"
+    code = run_command(f"{pip_path} install -r requirements.txt", cwd=BACKEND_DIR)
     if code != 0:
         print_error("安装依赖失败")
         return False
