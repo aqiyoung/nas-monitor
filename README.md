@@ -114,7 +114,14 @@
 
 ## 安装和运行
 
-### 1. 本地开发模式
+### 1. 一键部署
+
+```bash
+# 使用curl执行一键部署脚本
+curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
+```
+
+### 2. 本地开发模式
 
 #### 后端服务
 ```bash
@@ -125,15 +132,25 @@ python -m uvicorn main:app --reload --port 8017
 
 #### 前端服务
 ```bash
-cd frontend-vue
+cd frontend
 npm install
 npm run dev
 ```
 
-### 2. Docker 部署
+### 3. Docker 部署
 
 ```bash
 docker compose up -d
+```
+
+### 4. 一键卸载
+
+```bash
+# 进入项目目录
+cd nas-monitor
+
+# 执行卸载脚本
+./uninstall.sh
 ```
 
 ## 访问地址
@@ -157,7 +174,7 @@ as-monitor/
 │   ├── main.py           # 应用入口
 │   ├── requirements.txt  # 依赖配置
 │   └── Dockerfile        # Docker 配置
-├── frontend-vue/         # 前端应用
+├── frontend/         # 前端应用
 │   ├── src/
 │   │   ├── components/   # 组件
 │   │   ├── views/        # 页面
