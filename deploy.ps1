@@ -14,8 +14,7 @@ Write-Host -ForegroundColor Green "飞牛NAS监控系统一键部署脚本 (Powe
 Write-Host -ForegroundColor Cyan "====================================================="
 
 # 检查系统环境
-Write-Host -ForegroundColor Yellow "
-检查系统环境..."
+Write-Host -ForegroundColor Yellow "`n检查系统环境..."
 
 # 检查Git是否安装
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -66,8 +65,7 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
 }
 
 # 克隆项目
-Write-Host -ForegroundColor Yellow "
-克隆项目代码..."
+Write-Host -ForegroundColor Yellow "`n克隆项目代码..."
 if (Test-Path "nas-monitor") {
     Remove-Item -Recurse -Force "nas-monitor"
 }
@@ -75,19 +73,15 @@ git clone https://github.com/aqiyoung/nas-monitor.git
 cd nas-monitor
 
 # 运行安装脚本
-Write-Host -ForegroundColor Yellow "
-运行安装脚本..."
+Write-Host -ForegroundColor Yellow "`n运行安装脚本..."
 python install.py
 
-Write-Host -ForegroundColor Green "
-====================================================="
+Write-Host -ForegroundColor Green "`n====================================================="
 Write-Host -ForegroundColor Green "部署完成！"
 Write-Host -ForegroundColor Green "====================================================="
 Write-Host -ForegroundColor Blue "后端服务地址: http://localhost:8017"
 Write-Host -ForegroundColor Blue "前端访问地址: http://localhost"
-Write-Host -ForegroundColor Yellow "
-使用以下命令管理服务:"
+Write-Host -ForegroundColor Yellow "`n使用以下命令管理服务:"
 Write-Host "  python -m uvicorn main:app --host 0.0.0.0 --port 8017 # 启动服务"
 Write-Host "  Ctrl+C # 停止服务"
-Write-Host -ForegroundColor Green "
-祝您使用愉快！"
+Write-Host -ForegroundColor Green "`n祝您使用愉快！"
