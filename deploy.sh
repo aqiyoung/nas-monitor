@@ -156,15 +156,21 @@ if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FIL
     cd nas-monitor
     log "进入项目目录: $(pwd)"
     
-    # 运行安装脚本
-    log "运行安装脚本..."
-    echo -e "\n${YELLOW}运行安装脚本...${NC}"
-    if python3 install.py 2>&1 | tee -a "$LOG_FILE"; then
-        log "安装脚本执行成功"
-        echo -e "${GREEN}安装脚本执行成功${NC}"
+    # 检查install.py文件是否存在
+    if [ -f "install.py" ]; then
+        # 运行安装脚本
+        log "运行安装脚本..."
+        echo -e "\n${YELLOW}运行安装脚本...${NC}"
+        if python3 install.py 2>&1 | tee -a "$LOG_FILE"; then
+            log "安装脚本执行成功"
+            echo -e "${GREEN}安装脚本执行成功${NC}"
+        else
+            log "安装脚本执行失败"
+            echo -e "${RED}安装脚本执行失败，请查看日志文件了解详细原因${NC}"
+        fi
     else
-        log "安装脚本执行失败"
-        echo -e "${RED}安装脚本执行失败，请查看日志文件了解详细原因${NC}"
+        log "install.py文件不存在"
+        echo -e "${RED}install.py文件不存在，安装失败${NC}"
     fi
 else
     log "项目代码克隆失败"
@@ -175,6 +181,8 @@ else
     curl -I https://github.com 2>&1 | tee -a "$LOG_FILE"
     echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
     echo -e "${YELLOW}可能的原因：网络连接问题、GitHub访问限制、权限不足或磁盘空间不足${NC}"
+    echo -e "${YELLOW}请检查网络连接后重试${NC}"
+    exit 1
 fi
 
 log "部署完成"
