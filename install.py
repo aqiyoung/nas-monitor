@@ -104,9 +104,14 @@ def setup_backend():
         else:
             # 在Linux系统上优先使用python3
             python_cmd = "python3"
-        code = run_command(f"{python_cmd} -m venv venv", cwd=BACKEND_DIR)
+        # 捕获详细的错误信息
+        code, stdout, stderr = run_command(f"{python_cmd} -m venv venv", cwd=BACKEND_DIR, capture_output=True)
         if code != 0:
             print_error("创建虚拟环境失败")
+            if stdout:
+                print_error(f"标准输出: {stdout}")
+            if stderr:
+                print_error(f"错误输出: {stderr}")
             return False
         print_success("虚拟环境创建成功")
     else:
