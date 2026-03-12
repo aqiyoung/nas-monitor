@@ -1,6 +1,19 @@
 # Feiniu NAS Monitor Deployment Script (PowerShell Version)
 # This script allows you to quickly deploy the complete monitoring system
 
+# Check if running as administrator
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+if (-not $isAdmin) {
+    Write-Host "=====================================================" -ForegroundColor Red
+    Write-Host "警告: 请以管理员身份运行此脚本" -ForegroundColor Red
+    Write-Host "=====================================================" -ForegroundColor Red
+    Write-Host "此脚本需要管理员权限来安装系统依赖和配置服务" -ForegroundColor Yellow
+    Write-Host "请右键点击PowerShell图标，选择'以管理员身份运行'，然后重新执行此脚本" -ForegroundColor Yellow
+    Write-Host "`n按任意键退出..." -ForegroundColor Cyan
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    exit 1
+}
+
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host "Feiniu NAS Monitor Deployment Script (PowerShell Version)" -ForegroundColor Green
 Write-Host "=====================================================" -ForegroundColor Cyan

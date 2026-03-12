@@ -22,29 +22,50 @@ if [ ! -f /etc/debian_version ]; then
     exit 1
 fi
 
+# 检查sudo权限
+if ! sudo -n true 2>/dev/null; then
+    echo -e "${YELLOW}提示: 您需要sudo权限来安装系统依赖${NC}"
+    echo -e "${YELLOW}请确保您有sudo权限，或者在运行此脚本前获取root权限${NC}"
+fi
+
 # 检查curl是否安装
 if ! command -v curl &> /dev/null; then
     echo -e "${YELLOW}安装curl...${NC}"
-    sudo apt update && sudo apt install -y curl
+    if sudo apt update && sudo apt install -y curl; then
+        echo -e "${GREEN}curl安装成功${NC}"
+    else
+        echo -e "${RED}curl安装失败，请手动安装后重试${NC}"
+    fi
 fi
 
 # 检查git是否安装
 if ! command -v git &> /dev/null; then
     echo -e "${YELLOW}安装git...${NC}"
-    sudo apt update && sudo apt install -y git
+    if sudo apt update && sudo apt install -y git; then
+        echo -e "${GREEN}git安装成功${NC}"
+    else
+        echo -e "${RED}git安装失败，请手动安装后重试${NC}"
+    fi
 fi
 
 # 检查Python是否安装
 if ! command -v python3 &> /dev/null; then
     echo -e "${YELLOW}安装Python 3...${NC}"
-    sudo apt update && sudo apt install -y python3 python3-pip python3-venv
+    if sudo apt update && sudo apt install -y python3 python3-pip python3-venv; then
+        echo -e "${GREEN}Python 3安装成功${NC}"
+    else
+        echo -e "${RED}Python 3安装失败，请手动安装后重试${NC}"
+    fi
 fi
 
 # 检查Node.js是否安装
 if ! command -v node &> /dev/null; then
     echo -e "${YELLOW}安装Node.js...${NC}"
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt install -y nodejs
+    if curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt install -y nodejs; then
+        echo -e "${GREEN}Node.js安装成功${NC}"
+    else
+        echo -e "${RED}Node.js安装失败，请手动安装后重试${NC}"
+    fi
 fi
 
 # 克隆项目
