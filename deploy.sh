@@ -151,42 +151,48 @@ if [ -d "nas-monitor" ]; then
     fi
 fi
 
-log "开始克隆项目: https://github.com/aqiyoung/nas-monitor.git"
-# 尝试克隆项目并捕获详细错误信息
+# 尝试从GitHub克隆项目
+log "开始从GitHub克隆项目: https://github.com/aqiyoung/nas-monitor.git"
 if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
-    log "项目代码克隆成功"
-    echo -e "${GREEN}项目代码克隆成功${NC}"
-    cd nas-monitor
-    log "进入项目目录: $(pwd)"
-    
-    # 检查install.py文件是否存在
-    if [ -f "install.py" ]; then
-        # 运行安装脚本
-        log "运行安装脚本..."
-        echo -e "\n${YELLOW}运行安装脚本...${NC}"
-        if python3 install.py 2>&1 | tee -a "$LOG_FILE"; then
-            log "安装脚本执行成功"
-            echo -e "${GREEN}安装脚本执行成功${NC}"
-        else
-            log "安装脚本执行失败"
-            echo -e "${RED}安装脚本执行失败，请查看日志文件了解详细原因${NC}"
-        fi
+    log "从GitHub克隆项目成功"
+    echo -e "${GREEN}从GitHub克隆项目成功${NC}"
+else
+    # GitHub克隆失败，尝试从Gitee克隆
+    log "从GitHub克隆项目失败，尝试从Gitee克隆"
+    echo -e "${YELLOW}从GitHub克隆项目失败，尝试从Gitee克隆...${NC}"
+    log "开始从Gitee克隆项目: https://gitee.com/threely/nas-monitor.git"
+    if git clone https://gitee.com/threely/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
+        log "从Gitee克隆项目成功"
+        echo -e "${GREEN}从Gitee克隆项目成功${NC}"
     else
-        log "install.py文件不存在"
-        echo -e "${RED}install.py文件不存在，安装失败${NC}"
+        log "项目代码克隆失败"
+        log "检查网络连接和仓库访问权限"
+        echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
+        echo -e "${YELLOW}可能的原因：网络连接问题、仓库访问限制、权限不足或磁盘空间不足${NC}"
+        echo -e "${YELLOW}请检查网络连接后重试${NC}"
+        exit 1
+    fi
+fi
+cd nas-monitor
+log "进入项目目录: $(pwd)"
+
+# 检查install.py文件是否存在
+if [ -f "install.py" ]; then
+    # 运行安装脚本
+    log "运行安装脚本..."
+    echo -e "\n${YELLOW}运行安装脚本...${NC}"
+    if python3 install.py 2>&1 | tee -a "$LOG_FILE"; then
+        log "安装脚本执行成功"
+        echo -e "${GREEN}安装脚本执行成功${NC}"
+    else
+        log "安装脚本执行失败"
+        echo -e "${RED}安装脚本执行失败，请查看日志文件了解详细原因${NC}"
     fi
 else
-    log "项目代码克隆失败"
-    log "检查网络连接和GitHub访问权限"
-    log "尝试ping GitHub..."
-    ping -c 3 github.com 2>&1 | tee -a "$LOG_FILE"
-    log "尝试curl GitHub..."
-    curl -I https://github.com 2>&1 | tee -a "$LOG_FILE"
-    echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
-    echo -e "${YELLOW}可能的原因：网络连接问题、GitHub访问限制、权限不足或磁盘空间不足${NC}"
-    echo -e "${YELLOW}请检查网络连接后重试${NC}"
-    exit 1
+    log "install.py文件不存在"
+    echo -e "${RED}install.py文件不存在，安装失败${NC}"
 fi
+
 
 log "部署完成"
 echo -e "\n${GREEN}=====================================================${NC}"

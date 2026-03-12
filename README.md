@@ -7,15 +7,31 @@
 ### 一键部署
 
 #### Linux/macOS (Bash)
+
+**从 GitHub 部署**
 ```bash
 # 使用curl执行一键部署脚本
 curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
 ```
 
+**从 Gitee 部署**
+```bash
+# 使用curl执行一键部署脚本
+curl -fsSL https://gitee.com/threely/nas-monitor/raw/main/deploy.sh | bash
+```
+
 #### Windows (PowerShell)
+
+**从 GitHub 部署**
 ```powershell
 # 使用Invoke-WebRequest执行一键部署脚本
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
+```
+
+**从 Gitee 部署**
+```powershell
+# 使用Invoke-WebRequest执行一键部署脚本
+Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
 ```
 
 ## 版本信息
