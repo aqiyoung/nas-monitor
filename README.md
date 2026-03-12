@@ -2,6 +2,22 @@
 
 一个功能完整的 NAS 监控平台，用于监控 NAS 运行状态、网络流量、IO 运行状态和 Docker 容器运行状态。
 
+## 快速开始
+
+### 一键部署
+
+#### Linux/macOS (Bash)
+```bash
+# 使用curl执行一键部署脚本
+curl -fsSL https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.sh | bash
+```
+
+#### Windows (PowerShell)
+```powershell
+# 使用Invoke-WebRequest执行一键部署脚本
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aqiyoung/nas-monitor/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
+```
+
 ## 版本信息
 
 **当前版本**：v2.1.0
