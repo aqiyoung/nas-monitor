@@ -2,6 +2,9 @@
 # 飞牛NAS监控系统一键部署脚本
 # 通过此脚本可以快速部署完整的监控系统
 
+# 设置管道失败时立即退出
+set -o pipefail
+
 # 日志文件
 LOG_FILE="nas-monitor-deploy.log"
 
