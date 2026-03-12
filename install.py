@@ -154,9 +154,14 @@ def setup_frontend():
     # 构建前端
     print("构建前端...")
     # 使用npx运行本地的vite，避免全局vite不存在的问题
-    code = run_command("npx vite build", cwd=FRONTEND_DIR)
+    # 捕获详细的错误信息
+    code, stdout, stderr = run_command("npx vite build", cwd=FRONTEND_DIR, capture_output=True)
     if code != 0:
         print_error("构建前端失败")
+        if stdout:
+            print_error(f"标准输出: {stdout}")
+        if stderr:
+            print_error(f"错误输出: {stderr}")
         return False
     print_success("前端构建成功")
     
