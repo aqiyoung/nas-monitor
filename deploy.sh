@@ -116,15 +116,21 @@ fi
 # 克隆项目
 log "克隆项目代码..."
 echo -e "\n${YELLOW}克隆项目代码...${NC}"
-if git clone https://github.com/aqiyoung/nas-monitor.git; then
+# 保存当前目录
+current_dir=$(pwd)
+log "当前目录: $current_dir"
+log "开始克隆项目: https://github.com/aqiyoung/nas-monitor.git"
+# 尝试克隆项目并捕获详细错误信息
+if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
     log "项目代码克隆成功"
     echo -e "${GREEN}项目代码克隆成功${NC}"
     cd nas-monitor
+    log "进入项目目录: $(pwd)"
     
     # 运行安装脚本
     log "运行安装脚本..."
     echo -e "\n${YELLOW}运行安装脚本...${NC}"
-    if python3 install.py; then
+    if python3 install.py 2>&1 | tee -a "$LOG_FILE"; then
         log "安装脚本执行成功"
         echo -e "${GREEN}安装脚本执行成功${NC}"
     else
@@ -133,7 +139,13 @@ if git clone https://github.com/aqiyoung/nas-monitor.git; then
     fi
 else
     log "项目代码克隆失败"
+    log "检查网络连接和GitHub访问权限"
+    log "尝试ping GitHub..."
+    ping -c 3 github.com 2>&1 | tee -a "$LOG_FILE"
+    log "尝试curl GitHub..."
+    curl -I https://github.com 2>&1 | tee -a "$LOG_FILE"
     echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
+    echo -e "${YELLOW}可能的原因：网络连接问题、GitHub访问限制、权限不足或磁盘空间不足${NC}"
 fi
 
 log "部署完成"
