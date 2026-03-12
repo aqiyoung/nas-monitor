@@ -85,7 +85,7 @@ fi
 if ! command -v python3 &> /dev/null; then
     log "安装Python 3..."
     echo -e "${YELLOW}安装Python 3...${NC}"
-    if sudo apt update && sudo apt install -y python3 python3-pip python3-venv; then
+    if sudo apt update && sudo apt install -y python3 python3-pip python3-venv python-is-python3; then
         log "Python 3安装成功"
         echo -e "${GREEN}Python 3安装成功${NC}"
     else
@@ -95,6 +95,21 @@ if ! command -v python3 &> /dev/null; then
 else
     log "Python 3已安装"
     echo -e "${GREEN}Python 3已安装${NC}"
+    # 检查python命令是否存在，如果不存在则安装python-is-python3
+    if ! command -v python &> /dev/null; then
+        log "安装python-is-python3包，将python命令链接到python3..."
+        echo -e "${YELLOW}安装python-is-python3包，将python命令链接到python3...${NC}"
+        if sudo apt update && sudo apt install -y python-is-python3; then
+            log "python-is-python3安装成功"
+            echo -e "${GREEN}python-is-python3安装成功${NC}"
+        else
+            log "python-is-python3安装失败，请手动安装后重试"
+            echo -e "${RED}python-is-python3安装失败，请手动安装后重试${NC}"
+        fi
+    else
+        log "python命令已存在"
+        echo -e "${GREEN}python命令已存在${NC}"
+    fi
 fi
 
 # 检查Node.js是否安装
