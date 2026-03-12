@@ -292,18 +292,18 @@ def setup_bots():
         print("2. 飞书机器人")
         print("3. 跳过")
         
-        choice = input("请输入选项编号: ")
+        choice = input("请输入选项编号: ").strip()
         
         if choice == '1':
             if setup_telegram_bot():
                 # 询问是否继续设置其他机器人
-                continue_setup = input("是否继续设置其他机器人? (y/n): ")
+                continue_setup = input("是否继续设置其他机器人? (y/n): ").strip()
                 if continue_setup.lower() != 'y':
                     break
         elif choice == '2':
             if setup_feishu_bot():
                 # 询问是否继续设置其他机器人
-                continue_setup = input("是否继续设置其他机器人? (y/n): ")
+                continue_setup = input("是否继续设置其他机器人? (y/n): ").strip()
                 if continue_setup.lower() != 'y':
                     break
         elif choice == '3':
