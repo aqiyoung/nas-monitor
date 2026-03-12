@@ -122,6 +122,25 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Write-Host "Node.js is already installed" -ForegroundColor Green
 }
 
+# 检测脚本来源，自动选择克隆源
+$ScriptUrl = $MyInvocation.MyCommand.Path
+if ($ScriptUrl -like "*github*") {
+    # 从GitHub链接获取的脚本，从GitHub克隆
+    $CloneUrl = "https://github.com/aqiyoung/nas-monitor.git"
+    Write-Log "检测到脚本来自GitHub，使用GitHub克隆源"
+    Write-Host "检测到脚本来自GitHub，使用GitHub克隆源" -ForegroundColor Yellow
+} elseif ($ScriptUrl -like "*gitee*" -or $ScriptUrl -like "*gitee.com*") {
+    # 从Gitee链接获取的脚本，从Gitee克隆
+    $CloneUrl = "https://gitee.com/threely/nas-monitor.git"
+    Write-Log "检测到脚本来自Gitee，使用Gitee克隆源"
+    Write-Host "检测到脚本来自Gitee，使用Gitee克隆源" -ForegroundColor Yellow
+} else {
+    # 默认从GitHub克隆
+    $CloneUrl = "https://github.com/aqiyoung/nas-monitor.git"
+    Write-Log "无法检测脚本来源，使用默认GitHub克隆源"
+    Write-Host "无法检测脚本来源，使用默认GitHub克隆源" -ForegroundColor Yellow
+}
+
 # Clone project
 Write-Log "Cloning project code..."
 Write-Host "`nCloning project code..." -ForegroundColor Yellow
@@ -130,8 +149,8 @@ if (Test-Path "nas-monitor") {
     Remove-Item -Recurse -Force "nas-monitor"
 }
 try {
-    Write-Log "Cloning project: https://github.com/aqiyoung/nas-monitor.git"
-    git clone https://github.com/aqiyoung/nas-monitor.git
+    Write-Log "Cloning project: $CloneUrl"
+    git clone $CloneUrl
     Write-Log "Project code cloned successfully"
     Write-Host "Project code cloned successfully" -ForegroundColor Green
     cd nas-monitor

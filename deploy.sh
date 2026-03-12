@@ -151,27 +151,37 @@ if [ -d "nas-monitor" ]; then
     fi
 fi
 
-# 尝试从GitHub克隆项目
-log "开始从GitHub克隆项目: https://github.com/aqiyoung/nas-monitor.git"
-if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
-    log "从GitHub克隆项目成功"
-    echo -e "${GREEN}从GitHub克隆项目成功${NC}"
+# 检测脚本来源，自动选择克隆源
+SCRIPT_URL="$0"
+if [[ "$SCRIPT_URL" == *"github"* ]]; then
+    # 从GitHub链接获取的脚本，从GitHub克隆
+    CLONE_URL="https://github.com/aqiyoung/nas-monitor.git"
+    log "检测到脚本来自GitHub，使用GitHub克隆源"
+    echo -e "${YELLOW}检测到脚本来自GitHub，使用GitHub克隆源${NC}"
+elif [[ "$SCRIPT_URL" == *"gitee"* ]]; then
+    # 从Gitee链接获取的脚本，从Gitee克隆
+    CLONE_URL="https://gitee.com/threely/nas-monitor.git"
+    log "检测到脚本来自Gitee，使用Gitee克隆源"
+    echo -e "${YELLOW}检测到脚本来自Gitee，使用Gitee克隆源${NC}"
 else
-    # GitHub克隆失败，尝试从Gitee克隆
-    log "从GitHub克隆项目失败，尝试从Gitee克隆"
-    echo -e "${YELLOW}从GitHub克隆项目失败，尝试从Gitee克隆...${NC}"
-    log "开始从Gitee克隆项目: https://gitee.com/threely/nas-monitor.git"
-    if git clone https://gitee.com/threely/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
-        log "从Gitee克隆项目成功"
-        echo -e "${GREEN}从Gitee克隆项目成功${NC}"
-    else
-        log "项目代码克隆失败"
-        log "检查网络连接和仓库访问权限"
-        echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
-        echo -e "${YELLOW}可能的原因：网络连接问题、仓库访问限制、权限不足或磁盘空间不足${NC}"
-        echo -e "${YELLOW}请检查网络连接后重试${NC}"
-        exit 1
-    fi
+    # 默认从GitHub克隆
+    CLONE_URL="https://github.com/aqiyoung/nas-monitor.git"
+    log "无法检测脚本来源，使用默认GitHub克隆源"
+    echo -e "${YELLOW}无法检测脚本来源，使用默认GitHub克隆源${NC}"
+fi
+
+# 克隆项目
+log "开始克隆项目: $CLONE_URL"
+if git clone "$CLONE_URL" 2>&1 | tee -a "$LOG_FILE"; then
+    log "项目克隆成功"
+    echo -e "${GREEN}项目克隆成功${NC}"
+else
+    log "项目代码克隆失败"
+    log "检查网络连接和仓库访问权限"
+    echo -e "${RED}项目代码克隆失败，请查看日志文件了解详细原因${NC}"
+    echo -e "${YELLOW}可能的原因：网络连接问题、仓库访问限制、权限不足或磁盘空间不足${NC}"
+    echo -e "${YELLOW}请检查网络连接后重试${NC}"
+    exit 1
 fi
 cd nas-monitor
 log "进入项目目录: $(pwd)"
