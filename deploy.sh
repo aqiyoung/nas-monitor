@@ -134,6 +134,20 @@ echo -e "\n${YELLOW}克隆项目代码...${NC}"
 # 保存当前目录
 current_dir=$(pwd)
 log "当前目录: $current_dir"
+
+# 检查并删除已存在的nas-monitor目录
+if [ -d "nas-monitor" ]; then
+    log "删除已存在的nas-monitor目录..."
+    echo -e "${YELLOW}删除已存在的nas-monitor目录...${NC}"
+    if rm -rf nas-monitor; then
+        log "已成功删除nas-monitor目录"
+        echo -e "${GREEN}已成功删除nas-monitor目录${NC}"
+    else
+        log "删除nas-monitor目录失败"
+        echo -e "${RED}删除nas-monitor目录失败${NC}"
+    fi
+fi
+
 log "开始克隆项目: https://github.com/aqiyoung/nas-monitor.git"
 # 尝试克隆项目并捕获详细错误信息
 if git clone https://github.com/aqiyoung/nas-monitor.git 2>&1 | tee -a "$LOG_FILE"; then
