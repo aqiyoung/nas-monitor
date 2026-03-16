@@ -15,8 +15,8 @@
               <el-table-column prop="name" label="名称" width="180"></el-table-column>
               <el-table-column prop="type" label="类型" width="120">
                 <template #default="scope">
-                  <el-tag :type="scope.row.type === 'telegram' ? 'info' : 'success'">
-                    {{ scope.row.type === 'telegram' ? 'Telegram' : '飞书' }}
+                  <el-tag :type="scope.row.type === 'telegram' ? 'info' : (scope.row.type === 'feishu' ? 'success' : 'warning')">
+                    {{ scope.row.type === 'telegram' ? 'Telegram' : (scope.row.type === 'feishu' ? '飞书' : '飞书(OpenClaw)') }}
                   </el-tag>
                 </template>
               </el-table-column>
@@ -124,6 +124,7 @@
           <el-radio-group v-model="form.type">
             <el-radio label="telegram">Telegram</el-radio>
             <el-radio label="feishu">飞书</el-radio>
+            <el-radio label="feishu_openclaw">飞书(OpenClaw)</el-radio>
           </el-radio-group>
         </el-form-item>
         
@@ -138,6 +139,12 @@
         
         <el-form-item label="配置信息" v-else-if="form.type === 'feishu'">
           <el-input v-model="form.config.webhook_url" placeholder="飞书机器人Webhook URL" class="mb-2"></el-input>
+        </el-form-item>
+        
+        <el-form-item label="配置信息" v-else-if="form.type === 'feishu_openclaw'">
+          <el-input v-model="form.config.api_url" placeholder="OpenClaw服务API地址" class="mb-2"></el-input>
+          <el-input v-model="form.config.api_key" placeholder="OpenClaw API密钥" class="mb-2"></el-input>
+          <el-input v-model="form.config.chat_id" placeholder="飞书聊天ID" class="mb-2"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -236,7 +243,9 @@ export default defineComponent({
       form.config = {
         token: '',
         chat_id: '',
-        webhook_url: ''
+        webhook_url: '',
+        api_url: '',
+        api_key: ''
       }
       dialogVisible.value = true
     }

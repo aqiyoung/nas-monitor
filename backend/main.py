@@ -8,11 +8,12 @@ import app.services.alarm.scheduler_service
 import app.services.notification.notification_service
 import app.services.notification.telegram_provider
 import app.services.notification.feishu_provider
+import app.services.notification.feishu_openclaw_provider
 # 导入并初始化WebSocket服务
 import app.services.websocket.websocket_service
 from app.services.websocket.realtime_data_service import start_realtime_data_task
 
-app = FastAPI(title="NAS Monitor API", version="1.1.0")
+app = FastAPI(title="运维监控中心 API", version="1.1.0")
 
 # 启动实时数据推送任务
 start_realtime_data_task()
@@ -43,7 +44,7 @@ app.include_router(websocket, tags=["websocket"])
 
 @app.get("/")
 async def root():
-    return {"message": "NAS Monitor API is running"}
+    return {"message": "运维监控中心 API is running"}
 
 @app.get("/health")
 async def health_check():

@@ -6,7 +6,7 @@ class NotificationChannel(BaseModel):
     """通知渠道"""
     id: str = Field(..., description="渠道ID")
     name: str = Field(..., description="渠道名称")
-    type: str = Field(..., description="渠道类型: telegram, feishu")
+    type: str = Field(..., description="渠道类型: telegram, feishu, feishu_openclaw")
     enabled: bool = Field(default=True, description="是否启用")
     config: Dict[str, str] = Field(..., description="渠道配置")
     created_at: datetime = Field(default_factory=datetime.now, description="创建时间")
@@ -15,7 +15,7 @@ class NotificationChannel(BaseModel):
 class NotificationChannelCreate(BaseModel):
     """创建通知渠道"""
     name: str = Field(..., description="渠道名称")
-    type: str = Field(..., description="渠道类型: telegram, feishu")
+    type: str = Field(..., description="渠道类型: telegram, feishu, feishu_openclaw")
     enabled: bool = Field(default=True, description="是否启用")
     config: Dict[str, str] = Field(..., description="渠道配置")
 

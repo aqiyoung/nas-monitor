@@ -17,12 +17,6 @@
           </template>
           <span>仪表盘</span>
         </el-menu-item>
-        <el-menu-item index="/system">
-          <template #icon>
-            <el-icon><Monitor /></el-icon>
-          </template>
-          <span>系统状态</span>
-        </el-menu-item>
         <el-menu-item index="/network">
           <template #icon>
             <el-icon><Connection /></el-icon>

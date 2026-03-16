@@ -5,6 +5,7 @@ from app.models.notification.notification_models import (
     NotificationPreference, NotificationPreferenceUpdate
 )
 from app.services.notification.notification_storage import storage
+from app.services.notification.notification_service import notification_service
 from app.api.auth import get_current_active_user
 
 router = APIRouter()
@@ -27,7 +28,10 @@ async def get_notification_channel(channel_id: str, current_user: dict = Depends
 async def create_notification_channel(channel_data: NotificationChannelCreate, current_user: dict = Depends(get_current_active_user)):
     """创建通知渠道"""
     channel = NotificationChannel(**channel_data.dict())
-    return storage.create_channel(channel)
+    created_channel = storage.create_channel(channel)
+    # 为新创建的渠道创建通知提供者
+    notification_service.update_provider(created_channel)
+    return created_channel
 
 @router.put("/channels/{channel_id}", response_model=NotificationChannel)
 async def update_notification_channel(channel_id: str, updates: NotificationChannelUpdate, current_user: dict = Depends(get_current_active_user)):
@@ -36,6 +40,8 @@ async def update_notification_channel(channel_id: str, updates: NotificationChan
     channel = storage.update_channel(channel_id, update_dict)
     if not channel:
         raise HTTPException(status_code=404, detail="通知渠道不存在")
+    # 更新通知提供者
+    notification_service.update_provider(channel)
     return channel
 
 @router.delete("/channels/{channel_id}")
@@ -43,6 +49,8 @@ async def delete_notification_channel(channel_id: str, current_user: dict = Depe
     """删除通知渠道"""
     if not storage.delete_channel(channel_id):
         raise HTTPException(status_code=404, detail="通知渠道不存在")
+    # 移除通知提供者
+    notification_service.remove_provider(channel_id)
     return {"message": "通知渠道删除成功"}
 
 # 通知偏好设置相关API
