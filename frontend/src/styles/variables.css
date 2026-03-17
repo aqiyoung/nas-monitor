@@ -1,0 +1,120 @@
+:root {
+  /* 主色调 */
+  --primary-color: #3370ff;
+  --primary-hover: #4c83ff;
+  --primary-active: #1e5bff;
+  --primary-light: #e6f0ff;
+  --primary-dark: #0040cc;
+  
+  /* 辅助色 */
+  --success-color: #28c76f;
+  --success-hover: #40d085;
+  --success-active: #1fa85b;
+  --success-light: #e8f8f0;
+  
+  --warning-color: #ff9f43;
+  --warning-hover: #ffb066;
+  --warning-active: #e68a33;
+  --warning-light: #fff5e6;
+  
+  --error-color: #ea5455;
+  --error-hover: #f27172;
+  --error-active: #d63637;
+  --error-light: #fce8e8;
+  
+  --info-color: #00cfdd;
+  --info-hover: #28d9e5;
+  --info-active: #00b8c4;
+  --info-light: #e6f9fa;
+  
+  /* 中性色 */
+  --text-primary: #1a1a2e;
+  --text-regular: #4a4a68;
+  --text-secondary: #7a7a96;
+  --text-placeholder: #a0a0b8;
+  --text-disabled: #c7c7d8;
+  
+  /* 背景色 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fc;
+  --bg-tertiary: #f0f2f8;
+  --bg-disabled: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* 边框色 */
+  --border-primary: #e4e7ed;
+  --border-secondary: #ebeef5;
+  --border-light: #f0f2f5;
+  --border-focus: rgba(51, 112, 255, 0.3);
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
+  
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* 圆角 */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 9999px;
+  
+  /* 字体大小 */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-xxl: 24px;
+  --font-size-xxxl: 32px;
+  
+  /* 字体权重 */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* 过渡动画 */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  --transition-bounce: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Z-index */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  
+  /* 可访问性 */
+  --focus-outline: 2px solid var(--primary-color);
+  --focus-outline-offset: 2px;
+  
+  /* 高对比度模式支持 */
+  @media (prefers-contrast: high) {
+    --text-primary: #000000;
+    --text-regular: #333333;
+    --border-primary: #666666;
+  }
+  
+  /* 减少动画模式支持 */
+  @media (prefers-reduced-motion: reduce) {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+    --transition-bounce: 0s;
+  }
+}

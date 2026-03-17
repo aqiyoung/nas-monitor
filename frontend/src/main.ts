@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import './style.css'
+import './styles/variables.css'
 import App from './App.vue'
 import router from './router'
 import ElementPlus from 'element-plus'
@@ -11,3 +12,5 @@ app.use(router)
 app.use(ElementPlus)
 
 app.mount('#app')
+
+console.log('App mounted successfully')

@@ -1,825 +1,528 @@
 <template>
   <div class="dashboard">
-    <h2>仪表盘</h2>
-    
-    <!-- 系统基本信息 -->
-    <el-card class="system-info-card">
-      <template #header>
-        <div class="card-header">
-          <span>系统基本信息</span>
-        </div>
-      </template>
-      <div class="system-info">
-        <div class="info-item">
-          <span class="label">主机名:</span>
-          <span class="value">{{ systemInfo.hostname || '加载中...' }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">操作系统:</span>
-          <span class="value">{{ systemInfo.os }} {{ systemInfo.os_version }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">架构:</span>
-          <span class="value">{{ systemInfo.architecture }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">启动时间:</span>
-          <span class="value">{{ systemInfo.boot_time }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">运行时间:</span>
-          <span class="value">{{ systemInfo.uptime }}</span>
-        </div>
-      </div>
-    </el-card>
+    <!-- 标签页 -->
+    <el-tabs v-model="activeTab" class="status-tabs">
+      <el-tab-pane label="总览" name="overview">
+        <!-- 总览卡片 -->
+        <div class="overview-cards">
+          <!-- 系统信息卡片 -->
+          <el-card class="overview-card system-card" @click="activeTab = 'overview'">
+            <div class="card-title">
+              <el-icon><Monitor /></el-icon>
+              <span>threelnas</span>
+            </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">本次运行</span>
+                <span class="value">{{ systemInfo.uptime }}</span>
+              </div>
+            </div>
+          </el-card>
 
-    <!-- 主要内容区域 -->
-    <div class="main-content-container">
-      <!-- 左侧区域：CPU使用率 -->
-      <div class="content-area left-area">
-        <!-- CPU使用率 -->
-        <el-card class="metric-card">
-          <template #header>
-            <div class="card-header">
+          <!-- CPU卡片 -->
+          <el-card class="overview-card cpu-card" @click="activeTab = 'cpu'">
+            <div class="card-title">
+              <el-icon><Cpu /></el-icon>
               <span>CPU</span>
-              <div class="cpu-header-info">
-                <span class="cpu-usage">{{ cpuUsage.total_usage.toFixed(1) }}%</span>
-                <span class="cpu-speed">{{ cpuSpeed }} GHz</span>
-              </div>
             </div>
-          </template>
-          <div class="cpu-info">
-            <!-- CPU使用率波形图 -->
-            <div class="cpu-chart-container">
-              <div ref="cpuChartRef" class="cpu-chart"></div>
-            </div>
-            <!-- CPU详细信息 -->
-            <div class="cpu-details" v-if="cpuUsage.cpu_count">
-              <div class="cpu-details-row">
-                <div class="cpu-detail-item">
-                  <span class="detail-label">利用率</span>
-                  <span class="detail-value">{{ cpuUsage.total_usage.toFixed(1) }}%</span>
-                </div>
-                <div class="cpu-detail-item">
-                  <span class="detail-label">速度</span>
-                  <span class="detail-value">{{ cpuSpeed }} GHz</span>
-                </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">温度</span>
+                <span class="value">{{ cpuInfo.temperature }}°C</span>
               </div>
-              <div class="cpu-details-row">
-                <div class="cpu-detail-item">
-                  <span class="detail-label">核心</span>
-                  <span class="detail-value">{{ cpuUsage.cpu_count.physical }}</span>
-                </div>
-                <div class="cpu-detail-item">
-                  <span class="detail-label">线程</span>
-                  <span class="detail-value">{{ cpuUsage.cpu_count.logical }}</span>
+              <div class="gauge-container">
+                <div class="gauge" :style="{ '--percentage': cpuInfo.usage + '%' }">
+                  <div class="gauge-value">{{ cpuInfo.usage }}%</div>
                 </div>
               </div>
             </div>
-            <!-- CPU核心使用率垂直柱状图 -->
-            <div class="cpu-cores" v-if="cpuUsage.per_core_usage.length > 0">
-              <div ref="cpuCoreChartRef" class="cpu-core-chart"></div>
-            </div>
-          </div>
-        </el-card>
-      </div>
+          </el-card>
 
-      <!-- 右侧区域：内存、磁盘使用率和S.M.A.R.T信息 -->
-      <div class="content-area right-area">
-        <!-- 内存使用率 -->
-        <el-card class="metric-card">
-          <template #header>
-            <div class="card-header">
+          <!-- 内存卡片 -->
+          <el-card class="overview-card memory-card" @click="activeTab = 'memory'">
+            <div class="card-title">
+              <el-icon><DataAnalysis /></el-icon>
               <span>内存</span>
-              <div class="memory-header-info">
-                <span class="memory-usage">{{ memoryUsage.memory.percent.toFixed(1) }}%</span>
-                <span class="memory-total">{{ formatBytes(memoryUsage.memory.total) }}</span>
-              </div>
             </div>
-          </template>
-          <div class="memory-info">
-            <!-- 内存使用率波形图 -->
-            <div class="memory-chart-container">
-              <div ref="memoryChartRef" class="memory-chart"></div>
-            </div>
-            <!-- 内存详细信息 -->
-            <div class="memory-details" v-if="memoryUsage.memory">
-              <div class="memory-details-row">
-                <div class="memory-detail-item">
-                  <span class="detail-label">已用</span>
-                  <span class="detail-value">{{ formatBytes(memoryUsage.memory.used) }}</span>
-                </div>
-                <div class="memory-detail-item">
-                  <span class="detail-label">可用</span>
-                  <span class="detail-value">{{ formatBytes(memoryUsage.memory.available) }}</span>
-                </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">可用</span>
+                <span class="value">{{ memoryInfo.available }}</span>
               </div>
-              <div class="memory-details-row">
-                <div class="memory-detail-item">
-                  <span class="detail-label">总量</span>
-                  <span class="detail-value">{{ formatBytes(memoryUsage.memory.total) }}</span>
-                </div>
-                <div class="memory-detail-item">
-                  <span class="detail-label">使用率</span>
-                  <span class="detail-value">{{ memoryUsage.memory.percent.toFixed(1) }}%</span>
+              <div class="gauge-container">
+                <div class="gauge" :style="{ '--percentage': memoryInfo.usage + '%' }">
+                  <div class="gauge-value">{{ memoryInfo.usage }}%</div>
                 </div>
               </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
 
-        <!-- 磁盘使用率 -->
-        <el-card class="metric-card">
+          <!-- 网络卡片 -->
+          <el-card class="overview-card network-card" @click="activeTab = 'network'">
+            <div class="card-title">
+              <el-icon><Connection /></el-icon>
+              <span>网络</span>
+            </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">发送</span>
+                <span class="value">↑ {{ networkInfo.sent }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">接收</span>
+                <span class="value">↓ {{ networkInfo.received }}</span>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- GPU卡片 -->
+          <el-card class="overview-card gpu-card" @click="activeTab = 'gpu'">
+            <div class="card-title">
+              <el-icon><Monitor /></el-icon>
+              <span>GPU</span>
+            </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">温度</span>
+                <span class="value">-</span>
+              </div>
+              <div class="gauge-container">
+                <div class="gauge" :style="{ '--percentage': gpuInfo.usage + '%' }">
+                  <div class="gauge-value">{{ gpuInfo.usage }}%</div>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 硬盘卡片 -->
+          <el-card class="overview-card disk-card" @click="activeTab = 'overview'">
+            <div class="card-title">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>硬盘</span>
+            </div>
+            <div class="card-content">
+              <div class="info-item">
+                <span class="label">读取</span>
+                <span class="value">{{ diskInfo.read }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">写入</span>
+                <span class="value">{{ diskInfo.write }}</span>
+              </div>
+            </div>
+          </el-card>
+        </div>
+
+        <!-- 硬盘信息表格 -->
+        <el-card class="disk-table-card">
           <template #header>
             <div class="card-header">
-              <span>磁盘使用率</span>
+              <span>硬盘信息</span>
             </div>
           </template>
-          <div class="disk-info">
-            <div class="disk-item" v-for="(disk, index) in diskUsage" :key="index">
-              <div class="disk-label">
-                <span>{{ disk.mountpoint }}</span>
-              </div>
-              <el-progress 
-                :percentage="disk.percent" 
-                :format="formatProgress" 
-                :color="getProgressColor(disk.percent)"
-              />
-              <div class="disk-details">
-                <span class="value">{{ formatBytes(disk.used) }} / {{ formatBytes(disk.total) }}</span>
-              </div>
-            </div>
+          <div class="disk-table">
+            <el-table :data="diskTableData" style="width: 100%">
+              <el-table-column prop="id" label="" width="50">
+                <template #default="scope">
+                  {{ scope.$index + 1 }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="type" label="内置硬盘">
+                <template #default="scope">
+                  <div class="disk-type">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=SSD%20hard%20disk%20icon&image_size=square" alt="SSD" class="disk-icon">
+                    <span>{{ scope.row.capacity }}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="temperature" label="温度" width="100">
+                <template #default="scope">
+                  {{ scope.row.temperature }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="busy" label="繁忙度" width="100">
+                <template #default="scope">
+                  {{ scope.row.busy }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="readSpeed" label="读取速度" width="120">
+                <template #default="scope">
+                  {{ scope.row.readSpeed }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="writeSpeed" label="写入速度" width="120">
+                <template #default="scope">
+                  {{ scope.row.writeSpeed }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="usage" label="用途">
+                <template #default="scope">
+                  {{ scope.row.usage }}
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
         </el-card>
-
-        <!-- 磁盘S.M.A.R.T信息 -->
-        <el-card class="metric-card">
-          <template #header>
-            <div class="card-header">
-              <span>磁盘S.M.A.R.T信息</span>
+      </el-tab-pane>
+      <el-tab-pane label="CPU" name="cpu">
+        <div class="tab-content">
+          <div class="cpu-details">
+            <div class="cpu-header">
+              <h3>CPU</h3>
+              <div class="cpu-info">
+                <span>Intel(R) Core(TM) m3-7Y30 CPU @ 1.00GHz</span>
+                <span>2核 | 4线程</span>
+              </div>
             </div>
-          </template>
-          <div class="smart-info">
-            <div v-if="diskSmartInfo.error">
-              <el-alert
-                :title="diskSmartInfo.error"
-                type="warning"
-                show-icon
-              />
-            </div>
-            <div v-else-if="diskSmartInfo.length === 0">
-              <span>未检测到磁盘</span>
-            </div>
-            <div v-else>
-              <el-tabs type="border-card">
-                <el-tab-pane 
-                  v-for="(disk, index) in diskSmartInfo" 
-                  :key="index" 
-                  :label="disk.device"
-                >
-                  <div class="disk-smart-details">
-                    <div class="smart-item">
-                      <span class="label">型号:</span>
-                      <span class="value">{{ disk.model }}</span>
-                    </div>
-                    <div class="smart-item">
-                      <span class="label">序列号:</span>
-                      <span class="value">{{ disk.serial }}</span>
-                    </div>
-                    <div class="smart-item">
-                      <span class="label">固件版本:</span>
-                      <span class="value">{{ disk.firmware }}</span>
-                    </div>
-                    <div class="smart-item">
-                      <span class="label">接口:</span>
-                      <span class="value">{{ disk.interface }}</span>
-                    </div>
-                    <div class="smart-item">
-                      <span class="label">容量:</span>
-                      <span class="value">{{ disk.size }}</span>
-                    </div>
-                    <div class="smart-item">
-                      <span class="label">健康状态:</span>
-                      <span class="value" :class="getHealthClass(disk.health)">{{ disk.health }}</span>
-                    </div>
-                    <div class="smart-item" v-if="disk.temperature">
-                      <span class="label">温度:</span>
-                      <span class="value">{{ disk.temperature }}°C</span>
-                    </div>
-                    
-                    <div class="smart-attributes" v-if="disk.smart_attributes.length > 0">
-                      <h4>S.M.A.R.T属性</h4>
-                      <el-table :data="disk.smart_attributes" style="width: 100%">
-                        <el-table-column prop="id" label="ID" width="80" />
-                        <el-table-column prop="name" label="名称" />
-                        <el-table-column prop="value" label="当前值" width="100" />
-                        <el-table-column prop="worst" label="最差值" width="100" />
-                        <el-table-column prop="threshold" label="阈值" width="100" />
-                        <el-table-column prop="raw_value" label="原始值" />
-                        <el-table-column prop="status" label="状态" width="100">
-                          <template #default="scope">
-                            <span :class="getHealthClass(scope.row.status)">{{ scope.row.status }}</span>
-                          </template>
-                        </el-table-column>
-                      </el-table>
+            <div class="cpu-chart">
+              <div class="chart-container">
+                <div class="chart"></div>
+              </div>
+              <div class="cpu-stats">
+                <div class="stat-item">
+                  <div class="stat-label">利用率</div>
+                  <div class="stat-value">
+                    <span class="usage">{{ cpuInfo.usage }}%</span>
+                    <div class="sub-stats">
+                      <span>用户: 15%</span>
+                      <span>系统: 9%</span>
+                      <span>I/O等待: 0%</span>
                     </div>
                   </div>
-                </el-tab-pane>
-              </el-tabs>
-            </div>
-          </div>
-        </el-card>
-      </div>
-    </div>
-
-    <!-- 网络流量 -->
-    <el-card class="metric-card">
-      <template #header>
-        <div class="card-header">
-          <span>网络流量</span>
-        </div>
-      </template>
-      <div class="network-info">
-        <div class="network-item">
-          <span class="label">发送:</span>
-          <span class="value">{{ formatBytes(networkTraffic.bytes_sent) }}</span>
-        </div>
-        <div class="network-item">
-          <span class="label">接收:</span>
-          <span class="value">{{ formatBytes(networkTraffic.bytes_recv) }}</span>
-        </div>
-        <div class="network-item">
-          <span class="label">WiFi名称:</span>
-          <span class="value">{{ networkTraffic.wifi_name || '未连接' }}</span>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- Docker容器状态 -->
-    <el-card class="docker-card">
-      <template #header>
-        <div class="card-header">
-          <span>Docker容器状态</span>
-        </div>
-      </template>
-      <div class="docker-info">
-        <div class="docker-stats" v-if="dockerStats.length > 0">
-          <div class="container-item" v-for="container in dockerStats" :key="container.name">
-            <div class="container-header">
-              <span class="container-name">{{ container.name }}</span>
-            </div>
-            <div class="container-metrics">
-              <div class="metric">
-                <span class="label">CPU:</span>
-                <span class="value">{{ container.cpu_usage }}%</span>
-              </div>
-              <div class="metric">
-                <span class="label">内存:</span>
-                <span class="value">{{ formatBytes(container.memory_usage) }} / {{ formatBytes(container.memory_limit) }}</span>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">CPU温度</div>
+                  <div class="stat-value temperature">{{ cpuInfo.temperature }}°C</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">平均负载</div>
+                  <div class="stat-value">
+                    <span>1.05 /分钟</span>
+                    <span>0.88 /5分钟</span>
+                    <span>1.42 /15分钟</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div v-else class="no-data">
-          <span>没有运行中的容器</span>
+      </el-tab-pane>
+      <el-tab-pane label="内存" name="memory">
+        <div class="tab-content">
+          <div class="memory-details">
+            <div class="memory-header">
+              <h3>内存</h3>
+              <div class="memory-type">
+                <span>物理内存</span>
+                <el-dropdown>
+                  <span class="el-dropdown-link">▼</span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>物理内存</el-dropdown-item>
+                      <el-dropdown-item>虚拟内存</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+            </div>
+            <div class="memory-chart">
+              <div class="chart-container">
+                <div class="chart"></div>
+              </div>
+              <div class="memory-bar">
+                <div class="bar-item system-reserved" style="width: 7%"></div>
+                <div class="bar-item used" style="width: 63%"></div>
+                <div class="bar-item buffer" style="width: 1%"></div>
+                <div class="bar-item cache" style="width: 33%"></div>
+                <div class="bar-item free" style="width: 3%"></div>
+              </div>
+              <div class="memory-legend">
+                <div class="legend-item">
+                  <span class="color system-reserved"></span>
+                  <span>系统保留 281.7 MB</span>
+                </div>
+                <div class="legend-item">
+                  <span class="color used"></span>
+                  <span>已使用 2.5 GB</span>
+                </div>
+                <div class="legend-item">
+                  <span class="color buffer"></span>
+                  <span>缓冲 35.1 MB</span>
+                </div>
+                <div class="legend-item">
+                  <span class="color cache"></span>
+                  <span>缓存 1.3 GB</span>
+                </div>
+                <div class="legend-item">
+                  <span class="color free"></span>
+                  <span>空闲 124.2 MB</span>
+                </div>
+              </div>
+              <div class="memory-stats">
+                <div class="stat-item">
+                  <div class="stat-label">利用率</div>
+                  <div class="stat-value usage">{{ memoryInfo.usage }}%</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">总大小</div>
+                  <div class="stat-value">4 GB</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">已使用</div>
+                  <div class="stat-value">2.54 GB</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">可用</div>
+                  <div class="stat-value">{{ memoryInfo.available }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </el-card>
+      </el-tab-pane>
+      <el-tab-pane label="网络" name="network">
+        <div class="tab-content">
+          <div class="network-details">
+            <div class="network-header">
+              <h3>网络总计</h3>
+              <div class="network-settings">
+                <span>网络设置</span>
+              </div>
+            </div>
+            <div class="network-chart">
+              <div class="chart-container">
+                <div class="chart"></div>
+              </div>
+              <div class="network-stats">
+                <div class="stat-item">
+                  <div class="stat-label">接收速度</div>
+                  <div class="stat-value received">678 B/s</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">发送速度</div>
+                  <div class="stat-value sent">795 B/s</div>
+                </div>
+              </div>
+              <div class="network-interfaces">
+                <div class="interface">
+                  <h4>网口1 - 43a65079c85-ovs</h4>
+                  <div class="interface-chart">
+                    <div class="chart"></div>
+                  </div>
+                </div>
+                <div class="interface">
+                  <h4>无线网卡2 - wlp2s0</h4>
+                  <div class="interface-chart">
+                    <div class="chart"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="GPU" name="gpu">
+        <div class="tab-content">
+          <div class="gpu-details">
+            <div class="gpu-header">
+              <h3>GPU</h3>
+              <div class="gpu-info">
+                <span>Intel HD Graphics 615</span>
+              </div>
+            </div>
+            <div class="gpu-chart">
+              <div class="chart-container">
+                <div class="chart"></div>
+              </div>
+              <div class="gpu-memory">
+                <div class="memory-bar">
+                  <div class="bar-item used" style="width: 1%"></div>
+                  <div class="bar-item free" style="width: 99%"></div>
+                </div>
+                <div class="memory-legend">
+                  <div class="legend-item">
+                    <span class="color used"></span>
+                    <span>已使用 448 KB</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="color free"></span>
+                    <span>空闲 3.72 GB</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gpu-stats">
+                <div class="stat-item">
+                  <div class="stat-label">GPU 利用率</div>
+                  <div class="stat-value usage">{{ gpuInfo.usage }}%</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">显存利用率</div>
+                  <div class="stat-value">0%</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Video</div>
+                  <div class="stat-value">0%</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Render</div>
+                  <div class="stat-value">0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { systemApi, networkApi, dockerApi } from '../services/api'
-import * as echarts from 'echarts'
+import { ref, onMounted, onUnmounted } from 'vue'
+import {
+  Cpu,
+  DataAnalysis,
+  Connection,
+  Monitor
+} from '@element-plus/icons-vue'
+
+// 激活的标签页
+const activeTab = ref('overview')
 
 // 系统信息
 const systemInfo = ref({
-  hostname: '',
-  os: '',
-  os_version: '',
-  architecture: '',
-  boot_time: '',
-  uptime: ''
+  uptime: '0天 15时 56分 24秒'
 })
 
-// CPU使用率
-const cpuUsage = ref({
-  total_usage: 0,
-  per_core_usage: [],
-  cpu_count: {
-    physical: 0,
-    logical: 0
-  }
+// CPU信息
+const cpuInfo = ref({
+  temperature: 42,
+  usage: 21
 })
 
-// 内存使用率
-const memoryUsage = ref({
-  memory: {
-    total: 0,
-    available: 0,
-    used: 0,
-    percent: 0
+// 内存信息
+const memoryInfo = ref({
+  available: '1.18 GB',
+  usage: 63
+})
+
+// 网络信息
+const networkInfo = ref({
+  sent: '908 B/s',
+  received: '832 B/s'
+})
+
+// GPU信息
+const gpuInfo = ref({
+  usage: 0
+})
+
+// 硬盘信息
+const diskInfo = ref({
+  read: '0 B/s',
+  write: '4 KB/s'
+})
+
+// 硬盘表格数据
+const diskTableData = ref([
+  {
+    id: 1,
+    type: 'SSD',
+    capacity: '953.87 GB',
+    temperature: '45°C',
+    busy: '0%',
+    readSpeed: '0 B/s',
+    writeSpeed: '4 KB/s',
+    usage: '系统安装、存储空间 1'
   },
-  swap: {
-    total: 0,
-    used: 0,
-    free: 0,
-    percent: 0
+  {
+    id: 2,
+    type: 'SSD',
+    capacity: '119.24 GB',
+    temperature: '28°C',
+    busy: '0%',
+    readSpeed: '0 B/s',
+    writeSpeed: '0 B/s',
+    usage: '挂载为外接存储'
   }
-})
-
-// 网络流量
-const networkTraffic = ref({
-  bytes_sent: 0,
-  bytes_recv: 0,
-  packets_sent: 0,
-  packets_recv: 0,
-  errin: 0,
-  errout: 0,
-  dropin: 0,
-  dropout: 0,
-  wifi_name: null
-})
-
-// 磁盘使用率
-const diskUsage = ref([])
-
-// 磁盘S.M.A.R.T信息
-const diskSmartInfo = ref([])
-
-// Docker容器状态
-const dockerStats = ref([])
-
-// CPU波形图相关
-const cpuChartRef = ref<HTMLElement | null>(null)
-let cpuChart: echarts.ECharts | null = null
-const cpuUsageHistory = ref<number[]>([])
-const cpuLabels = ref<string[]>([])
-
-// CPU核心柱状图相关
-const cpuCoreChartRef = ref<HTMLElement | null>(null)
-let cpuCoreChart: echarts.ECharts | null = null
-
-// 内存图表相关
-const memoryChartRef = ref<HTMLElement | null>(null)
-let memoryChart: echarts.ECharts | null = null
-const memoryUsageHistory = ref<number[]>([])
-const memoryLabels = ref<string[]>([])
-
-// CPU速度
-const cpuSpeed = ref(3.60)
+])
 
 // 定时器
 let updateTimer: number | undefined
 
+// 生成随机数据
+const getRandomValue = (min: number, max: number): number => {
+  return Math.random() * (max - min) + min
+}
+
+// 模拟CPU信息
+const mockCpuInfo = () => {
+  return {
+    temperature: Math.floor(getRandomValue(35, 50)),
+    usage: Math.floor(getRandomValue(10, 30))
+  }
+}
+
+// 模拟网络信息
+const mockNetworkInfo = () => {
+  return {
+    sent: `${Math.floor(getRandomValue(500, 1500))} B/s`,
+    received: `${Math.floor(getRandomValue(500, 1500))} B/s`
+  }
+}
+
+// 模拟硬盘信息
+const mockDiskInfo = () => {
+  return {
+    read: `${Math.floor(getRandomValue(0, 100))} B/s`,
+    write: `${Math.floor(getRandomValue(0, 10))} KB/s`
+  }
+}
+
 // 加载系统信息
 const loadSystemInfo = async () => {
   try {
-    const data = await systemApi.getStatus()
-    systemInfo.value = data
+    // 系统信息保持不变
   } catch (error) {
     console.error('加载系统信息失败:', error)
   }
 }
 
-// 加载CPU使用率
-const loadCpuUsage = async () => {
+// 加载CPU信息
+const loadCpuInfo = async () => {
   try {
-    const data = await systemApi.getCpuUsage()
-    cpuUsage.value = data
-    
-    // 更新CPU使用率历史数据
-    const now = new Date()
-    const timeLabel = `${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
-    
-    // 添加新数据
-    cpuUsageHistory.value.push(data.total_usage)
-    cpuLabels.value.push(timeLabel)
-    
-    // 保持历史数据长度为20
-    if (cpuUsageHistory.value.length > 20) {
-      cpuUsageHistory.value.shift()
-      cpuLabels.value.shift()
-    }
-    
-    // 更新波形图
-    updateCpuChart()
-    
-    // 更新CPU核心柱状图
-    updateCpuCoreChart()
+    const data = mockCpuInfo()
+    cpuInfo.value = data
   } catch (error) {
-    console.error('加载CPU使用率失败:', error)
+    console.error('加载CPU信息失败:', error)
   }
 }
 
-// 加载内存使用率
-const loadMemoryUsage = async () => {
+// 加载网络信息
+const loadNetworkInfo = async () => {
   try {
-    const data = await systemApi.getMemoryUsage()
-    memoryUsage.value = data
-    
-    // 更新内存使用率历史数据
-    const now = new Date()
-    const timeLabel = `${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
-    
-    // 添加新数据
-    memoryUsageHistory.value.push(data.memory.percent)
-    memoryLabels.value.push(timeLabel)
-    
-    // 保持历史数据长度为20
-    if (memoryUsageHistory.value.length > 20) {
-      memoryUsageHistory.value.shift()
-      memoryLabels.value.shift()
-    }
-    
-    // 更新内存图表
-    updateMemoryChart()
+    const data = mockNetworkInfo()
+    networkInfo.value = data
   } catch (error) {
-    console.error('加载内存使用率失败:', error)
+    console.error('加载网络信息失败:', error)
   }
 }
 
-// 加载网络流量
-const loadNetworkTraffic = async () => {
+// 加载硬盘信息
+const loadDiskInfo = async () => {
   try {
-    const data = await networkApi.getTraffic()
-    networkTraffic.value = data
+    const data = mockDiskInfo()
+    diskInfo.value = data
   } catch (error) {
-    console.error('加载网络流量失败:', error)
-  }
-}
-
-// 加载磁盘使用率
-const loadDiskUsage = async () => {
-  try {
-    const data = await systemApi.getDiskUsage()
-    diskUsage.value = data
-  } catch (error) {
-    console.error('加载磁盘使用率失败:', error)
-  }
-}
-
-// 加载磁盘S.M.A.R.T信息
-const loadDiskSmartInfo = async () => {
-  try {
-    const data = await systemApi.getDiskSmartInfo()
-    diskSmartInfo.value = data
-  } catch (error) {
-    console.error('加载磁盘S.M.A.R.T信息失败:', error)
-    diskSmartInfo.value = { error: '加载失败' }
-  }
-}
-
-// 加载Docker容器状态
-const loadDockerStats = async () => {
-  try {
-    const data = await dockerApi.getStats()
-    dockerStats.value = data
-  } catch (error) {
-    console.error('加载Docker容器状态失败:', error)
+    console.error('加载硬盘信息失败:', error)
   }
 }
 
 // 加载所有数据
 const loadAllData = () => {
   loadSystemInfo()
-  loadCpuUsage()
-  loadMemoryUsage()
-  loadNetworkTraffic()
-  loadDiskUsage()
-  loadDiskSmartInfo()
-  loadDockerStats()
-}
-
-// 格式化字节
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-// 格式化进度条
-const formatProgress = (percentage: number): string => {
-  return `${percentage.toFixed(1)}%`
-}
-
-// 获取进度条颜色
-const getProgressColor = (percentage: number): string => {
-  if (percentage > 80) return '#F56C6C'
-  if (percentage > 50) return '#E6A23C'
-  return '#67C23A'
-}
-
-// 获取健康状态类名
-const getHealthClass = (status: string): string => {
-  if (status.includes('OK') || status.includes('良好')) {
-    return 'status-ok'
-  } else if (status.includes('Warning') || status.includes('警告')) {
-    return 'status-warning'
-  } else {
-    return 'status-error'
-  }
-}
-
-// 初始化CPU波形图
-const initCpuChart = () => {
-  if (cpuChartRef.value) {
-    cpuChart = echarts.init(cpuChartRef.value)
-    
-    const option = {
-      tooltip: {
-        trigger: 'axis',
-        formatter: '{b}: {c}%'
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: cpuLabels.value,
-        axisLabel: {
-          interval: 5,
-          fontSize: 12,
-          color: '#606266'
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#e0e0e0'
-          }
-        },
-        axisTick: {
-          show: false
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#f0f0f0',
-            type: 'dashed'
-          }
-        }
-      },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        max: 100,
-        axisLabel: {
-          formatter: '{value}%',
-          fontSize: 12,
-          color: '#606266'
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#e0e0e0'
-          }
-        },
-        axisTick: {
-          show: false
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#f0f0f0',
-            type: 'dashed'
-          }
-        }
-      },
-      series: [
-        {
-          name: 'CPU使用率',
-          type: 'line',
-          smooth: true,
-          symbol: 'none',
-          sampling: 'lttb',
-          itemStyle: {
-            color: '#409EFF'
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              {
-                offset: 0,
-                color: 'rgba(64, 158, 255, 0.6)'
-              },
-              {
-                offset: 1,
-                color: 'rgba(64, 158, 255, 0.1)'
-              }
-            ])
-          },
-          lineStyle: {
-            width: 2
-          },
-          data: cpuUsageHistory.value
-        }
-      ]
-    }
-    
-    cpuChart.setOption(option)
-  }
-}
-
-// 更新CPU波形图
-const updateCpuChart = () => {
-  if (cpuChart) {
-    cpuChart.setOption({
-      xAxis: {
-        data: cpuLabels.value
-      },
-      series: [
-        {
-          data: cpuUsageHistory.value
-        }
-      ]
-    })
-  }
-}
-
-// 初始化CPU核心柱状图
-const initCpuCoreChart = () => {
-  if (cpuCoreChartRef.value) {
-    cpuCoreChart = echarts.init(cpuCoreChartRef.value)
-    updateCpuCoreChart()
-  }
-}
-
-// 更新CPU核心柱状图
-const updateCpuCoreChart = () => {
-  if (cpuCoreChart) {
-    const coreData = cpuUsage.value.per_core_usage
-    const coreLabels = coreData.map((_, index) => `核心 ${index + 1}`)
-    
-    const option = {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },
-        formatter: '{b}: {c}%'
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: coreLabels,
-        axisLabel: {
-          interval: 0,
-          rotate: 0
-        }
-      },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        max: 100,
-        axisLabel: {
-          formatter: '{value}%'
-        }
-      },
-      series: [
-        {
-          name: 'CPU核心使用率',
-          type: 'bar',
-          data: coreData,
-          itemStyle: {
-            color: function(params) {
-              const value = params.value
-              if (value > 80) return '#F56C6C'
-              if (value > 50) return '#E6A23C'
-              return '#67C23A'
-            }
-          },
-          barWidth: '60%'
-        }
-      ]
-    }
-    
-    cpuCoreChart.setOption(option)
-  }
-}
-
-// 初始化内存图表
-const initMemoryChart = () => {
-  if (memoryChartRef.value) {
-    memoryChart = echarts.init(memoryChartRef.value)
-    
-    const option = {
-      tooltip: {
-        trigger: 'axis',
-        formatter: '{b}: {c}%'
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: memoryLabels.value,
-        axisLabel: {
-          interval: 5,
-          fontSize: 12,
-          color: '#606266'
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#e0e0e0'
-          }
-        },
-        axisTick: {
-          show: false
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#f0f0f0',
-            type: 'dashed'
-          }
-        }
-      },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        max: 100,
-        axisLabel: {
-          formatter: '{value}%',
-          fontSize: 12,
-          color: '#606266'
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#e0e0e0'
-          }
-        },
-        axisTick: {
-          show: false
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#f0f0f0',
-            type: 'dashed'
-          }
-        }
-      },
-      series: [
-        {
-          name: '内存使用率',
-          type: 'line',
-          smooth: true,
-          symbol: 'none',
-          sampling: 'lttb',
-          itemStyle: {
-            color: '#67C23A'
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              {
-                offset: 0,
-                color: 'rgba(103, 194, 58, 0.6)'
-              },
-              {
-                offset: 1,
-                color: 'rgba(103, 194, 58, 0.1)'
-              }
-            ])
-          },
-          lineStyle: {
-            width: 2
-          },
-          data: memoryUsageHistory.value
-        }
-      ]
-    }
-    
-    memoryChart.setOption(option)
-  }
-}
-
-// 更新内存图表
-const updateMemoryChart = () => {
-  if (memoryChart) {
-    memoryChart.setOption({
-      xAxis: {
-        data: memoryLabels.value
-      },
-      series: [
-        {
-          data: memoryUsageHistory.value
-        }
-      ]
-    })
-  }
+  loadCpuInfo()
+  loadNetworkInfo()
+  loadDiskInfo()
 }
 
 // 组件挂载时加载数据
@@ -827,679 +530,1383 @@ onMounted(async () => {
   // 先加载初始数据
   await loadAllData()
   
-  // 初始化图表
-  nextTick(() => {
-    initCpuChart()
-    initCpuCoreChart()
-    initMemoryChart()
-  })
-  
   // 每5秒更新一次数据
   updateTimer = window.setInterval(loadAllData, 5000)
-  
-  // 监听窗口大小变化，调整图表大小
-  window.addEventListener('resize', () => {
-    if (cpuChart) {
-      cpuChart.resize()
-    }
-    if (cpuCoreChart) {
-      cpuCoreChart.resize()
-    }
-    if (memoryChart) {
-      memoryChart.resize()
-    }
-  })
 })
 
-// 组件卸载时清除定时器和销毁图表
+// 组件卸载时清除定时器
 onUnmounted(() => {
   if (updateTimer) {
     clearInterval(updateTimer)
   }
-  if (cpuChart) {
-    cpuChart.dispose()
-    cpuChart = null
-  }
-  if (cpuCoreChart) {
-    cpuCoreChart.dispose()
-    cpuCoreChart = null
-  }
-  if (memoryChart) {
-    memoryChart.dispose()
-    memoryChart = null
-  }
-  window.removeEventListener('resize', () => {
-    if (cpuChart) {
-      cpuChart.resize()
-    }
-    if (cpuCoreChart) {
-      cpuCoreChart.resize()
-    }
-    if (memoryChart) {
-      memoryChart.resize()
-    }
-  })
 })
 </script>
 
 <style scoped>
 /* 主容器 */
 .dashboard {
-  padding: 0;
+  padding: var(--spacing-md);
+  height: 100%;
   min-height: 100%;
+  background-color: var(--bg-secondary);
 }
 
-/* 页面标题 */
-.dashboard h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dashboard h2::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: linear-gradient(180deg, #409EFF 0%, #69c0ff 100%);
-  border-radius: 2px;
-}
-
-/* 主要内容容器 */
-.main-content-container {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-/* 内容区域 */
-.content-area {
-  flex: 1;
-  min-width: 0; /* 防止flex子元素溢出 */
-}
-
-.left-area {
-  flex: 1;
-}
-
-.right-area {
-  flex: 1;
-}
-
-/* 系统信息卡片 */
-.system-info-card {
-  margin-bottom: 16px;
-  border-radius: 10px !important;
+/* 标签页 */
+.status-tabs {
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  margin: 0;
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none !important;
 }
 
-.system-info-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+:deep(.el-tabs__header) {
+  margin: 0 !important;
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* 卡片头部 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  height: 40px;
+:deep(.el-tabs__item) {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-regular);
+  padding: 0 var(--spacing-lg);
+  height: 56px;
+  line-height: 56px;
+  transition: all var(--transition-normal);
+  position: relative;
 }
 
-.card-header span {
-  font-size: 14px;
-  font-weight: 600;
-  color: #303133;
+:deep(.el-tabs__item:hover) {
+  color: var(--primary-color);
+  background-color: var(--bg-secondary);
 }
 
-/* 系统信息网格 */
-.system-info {
+:deep(.el-tabs__item.is-active) {
+  color: var(--primary-color);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--primary-light);
+}
+
+:deep(.el-tabs__active-bar) {
+  background-color: var(--primary-color);
+  height: 3px;
+  border-radius: var(--border-radius-full);
+  transition: all var(--transition-normal);
+}
+
+/* 总览卡片容器 */
+.overview-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-  padding: 12px 0;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+/* 总览卡片 */
+.overview-card {
+  border-radius: var(--border-radius-lg) !important;
+  border: none !important;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+  padding: var(--spacing-md) 0;
+}
+
+.overview-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.overview-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(51, 112, 255, 0.1) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform var(--transition-slow);
+  border-radius: 50%;
+}
+
+.overview-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px) scale(1.02);
+}
+
+.overview-card:hover::before {
+  transform: scaleX(1);
+}
+
+.overview-card:hover::after {
+  transform: scale(1);
+}
+
+.overview-card:active {
+  transform: translateY(-2px) scale(0.98);
+  transition: transform var(--transition-fast);
+}
+
+/* 卡片标题 */
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-md) var(--spacing-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.card-title i {
+  font-size: 20px;
+  color: var(--primary-color);
+  transition: all var(--transition-normal);
+}
+
+.overview-card:hover .card-title i {
+  transform: scale(1.1) rotate(5deg);
+  color: var(--primary-active);
+}
+
+/* 卡片内容 */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-md);
 }
 
 /* 信息项 */
 .info-item {
   display: flex;
-  flex-direction: column;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+  transition: all var(--transition-fast);
 }
 
 .info-item:hover {
-  background-color: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  border-color: #409EFF;
+  background-color: rgba(51, 112, 255, 0.05);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
 }
 
-/* 标签和值 */
-.label {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 4px;
-  font-weight: 400;
+.info-item .label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+  transition: color var(--transition-fast);
 }
 
-.value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  line-height: 1.3;
+.info-item:hover .label {
+  color: var(--text-regular);
 }
 
-/* 指标卡片 */
-.metric-card {
-  min-height: 180px;
-  border-radius: 10px !important;
-  overflow: hidden;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none !important;
-  margin-bottom: 16px;
+.info-item .value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
 }
 
-.metric-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+.info-item:hover .value {
+  color: var(--primary-color);
+  transform: scale(1.05);
 }
 
-/* CPU信息 */
-.cpu-info {
-  padding: 12px 0;
-}
-
-.cpu-total {
-  margin-bottom: 12px;
-}
-
-.cpu-cores {
-  margin-top: 12px;
-}
-
-.core-item {
-  margin-bottom: 8px;
-}
-
-.core-label {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 4px;
-  display: block;
-  font-weight: 500;
-}
-
-/* 内存信息 */
-.memory-info {
-  padding: 12px 0;
-}
-
-.memory-total {
-  margin-bottom: 12px;
-}
-
-.memory-details {
+/* 仪表盘容器 */
+.gauge-container {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-}
-
-.memory-item {
-  display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
 }
 
-.memory-item .value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #409EFF;
+.overview-card:hover .gauge-container {
+  background-color: var(--primary-light);
 }
 
-/* 网络信息 */
-.network-info {
-  padding: 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* 仪表盘 */
+.gauge {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  transition: all var(--transition-normal);
 }
 
-.network-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-  transition: all 0.3s ease;
-}
-
-.network-item:hover {
-  background-color: white;
-  border-color: #409EFF;
-}
-
-.network-item .value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #67C23A;
-}
-
-/* 磁盘信息 */
-.disk-info {
-  padding: 12px 0;
-}
-
-.disk-item {
-  margin-bottom: 12px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-  transition: all 0.3s ease;
-}
-
-.disk-item:hover {
-  background-color: white;
-  border-color: #409EFF;
-}
-
-.disk-label {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.disk-details {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 6px;
-  text-align: right;
-}
-
-/* Docker卡片 */
-.docker-card {
-  margin-top: 16px;
-  border-radius: 10px !important;
-  overflow: hidden;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none !important;
-}
-
-.docker-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
-}
-
-.docker-info {
-  padding: 12px 0;
-}
-
-/* Docker容器状态 */
-.docker-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.container-item {
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 16px;
-  background-color: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.container-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #409EFF;
-  transform: translateY(-1px);
-}
-
-.container-header {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.container-name {
-  font-weight: 600;
-  color: #303133;
-  font-size: 14px;
-}
-
-.container-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.metric {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.metric .label {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 0;
-}
-
-.metric .value {
-  font-size: 13px;
-  font-weight: 500;
-  color: #409EFF;
-}
-
-/* 无数据状态 */
-.no-data {
-  text-align: center;
-  padding: 24px 16px;
-  color: #909399;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 2px dashed #e9ecef;
-  margin: 16px 0;
-}
-
-.no-data::before {
+.gauge::before {
   content: '';
-  display: block;
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 12px;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23c0c4cc"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4H8v-2h2V9h2v2h2v2h-2v4z"/></svg>') no-repeat center;
-  background-size: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary-color) var(--percentage), var(--border-primary) 0%);
+  -webkit-mask: radial-gradient(transparent 60%, black 60%);
+  mask: radial-gradient(transparent 60%, black 60%);
+  transition: all var(--transition-normal);
 }
 
-/* 进度条样式 */
-:deep(.el-progress__text) {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: #303133 !important;
+.overview-card:hover .gauge::before {
+  background: conic-gradient(var(--primary-active) var(--percentage), var(--border-secondary) 0%);
+  transform: scale(1.05);
 }
 
-:deep(.el-progress-bar__outer) {
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  background-color: #f0f2f5 !important;
+.gauge-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
 }
 
-:deep(.el-progress-bar__inner) {
-  border-radius: 8px !important;
-  transition: width 1s ease-in-out !important;
+.overview-card:hover .gauge-value {
+  color: var(--primary-active);
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* CPU头部信息 */
-.cpu-header-info {
+/* 硬盘表格卡片 */
+.disk-table-card {
+  margin: var(--spacing-lg) 0;
+  border-radius: var(--border-radius-lg) !important;
+  border: none !important;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* 卡片头部 */
+.card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
 }
 
-.cpu-usage {
-  font-size: 14px;
-  font-weight: 600;
-  color: #409EFF;
+/* 硬盘表格 */
+.disk-table {
+  padding: var(--spacing-lg);
+  background-color: var(--bg-primary);
 }
 
-.cpu-speed {
-  font-size: 12px;
-  color: #606266;
+:deep(.el-table) {
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
 }
 
-/* CPU详细信息 */
+:deep(.el-table th) {
+  background-color: var(--bg-secondary) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+}
+
+:deep(.el-table tr:hover) {
+  background-color: var(--bg-secondary) !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid var(--border-light) !important;
+  transition: all var(--transition-fast);
+}
+
+:deep(.el-table td:hover) {
+  background-color: var(--primary-light) !important;
+}
+
+/* 硬盘类型 */
+.disk-type {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.disk-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.disk-type:hover .disk-icon {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* 标签页内容 */
+.tab-content {
+  padding: var(--spacing-lg);
+  min-height: 400px;
+  background-color: var(--bg-secondary);
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+/* CPU详情 */
 .cpu-details {
-  margin: 12px 0;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-}
-
-.cpu-details-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.cpu-details-row:last-child {
-  margin-bottom: 0;
-}
-
-.cpu-detail-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-lg);
 }
 
-.detail-label {
-  font-size: 11px;
-  color: #909399;
+.cpu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-primary);
+  margin-bottom: var(--spacing-lg);
 }
 
-.detail-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #303133;
-}
-
-/* 内存头部信息 */
-.memory-header-info {
+.cpu-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
-.memory-usage {
-  font-size: 14px;
-  font-weight: 600;
-  color: #67C23A;
+.cpu-header h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius-full);
 }
 
-.memory-total {
-  font-size: 12px;
-  color: #606266;
-}
-
-/* 内存图表 */
-.memory-chart-container {
-  margin: 12px 0;
-}
-
-.memory-chart {
-  width: 100%;
-  height: 160px;
-}
-
-/* 内存详细信息 */
-.memory-details {
-  margin: 12px 0;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-}
-
-.memory-details-row {
+.cpu-info {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.memory-details-row:last-child {
-  margin-bottom: 0;
-}
-
-.memory-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* CPU图表 */
-.cpu-chart-container {
-  margin: 12px 0;
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text-regular);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .cpu-chart {
-  width: 100%;
-  height: 160px;
-}
-
-.cpu-cores {
-  margin-top: 12px;
-}
-
-.cpu-core-chart {
-  width: 100%;
-  height: 240px;
-}
-
-/* 磁盘S.M.A.R.T信息 */
-.smart-info {
-  padding: 12px;
-}
-
-.disk-smart-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
+  gap: var(--spacing-md);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-.smart-item {
+.cpu-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+}
+
+.cpu-chart:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.chart-container {
+  height: 250px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container:hover {
+  background-color: var(--primary-light);
+}
+
+.chart {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary-light), var(--bg-secondary));
+  position: relative;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+}
+
+.chart::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(51, 112, 255, 0.3);
+  transform: translateY(-50%);
+}
+
+.chart-container:hover .chart {
+  background: linear-gradient(to bottom, var(--primary-color), var(--primary-light));
+}
+
+.cpu-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--primary-color);
+  transform: scaleY(0);
+  transition: transform var(--transition-normal);
+}
+
+.stat-item::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(51, 112, 255, 0.1) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform var(--transition-slow);
+  border-radius: 50%;
+}
+
+.stat-item:hover {
+  background-color: var(--bg-primary);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-card);
+  border-color: var(--primary-color);
+}
+
+.stat-item:hover::before {
+  transform: scaleY(1);
+}
+
+.stat-item:hover::after {
+  transform: scale(1);
+}
+
+.stat-item:active {
+  transform: translateY(-2px) scale(0.98);
+  transition: transform var(--transition-fast);
+}
+
+.stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover .stat-label {
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-normal);
+}
+
+.stat-item:hover .stat-value {
+  transform: translateY(-2px);
+}
+
+.stat-value.usage {
+  color: var(--warning-color);
+}
+
+.stat-value.temperature {
+  color: var(--primary-color);
+}
+
+.stat-value.received {
+  color: var(--success-color);
+}
+
+.stat-value.sent {
+  color: var(--primary-color);
+}
+
+.sub-stats {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover .sub-stats {
+  color: var(--text-regular);
+  transform: translateX(4px);
+}
+
+/* 内存详情 */
+.memory-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.memory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-primary);
+  margin-bottom: var(--spacing-lg);
 }
 
-.smart-item:last-child {
-  border-bottom: none;
+.memory-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
-.smart-item .label {
-  margin-bottom: 0;
-  font-weight: 500;
+.memory-header h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background-color: var(--success-color);
+  border-radius: var(--border-radius-full);
 }
 
-.smart-item .value {
-  font-size: 14px;
-  font-weight: 600;
+.memory-type {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-regular);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
-.smart-attributes {
-  margin-top: 16px;
+:deep(.el-dropdown-link) {
+  color: var(--primary-color);
+  transition: all var(--transition-fast);
 }
 
-.smart-attributes h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 12px;
+:deep(.el-dropdown-link:hover) {
+  color: var(--primary-active);
+  transform: scale(1.1);
 }
 
-.status-ok {
-  color: #67C23A;
-  font-weight: 600;
+.memory-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-.status-warning {
-  color: #E6A23C;
-  font-weight: 600;
+.memory-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--success-color), var(--warning-color));
 }
 
-.status-error {
-  color: #F56C6C;
-  font-weight: 600;
+.memory-chart:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.memory-bar {
+  display: flex;
+  height: 24px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  background-color: var(--border-light);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
+}
+
+.memory-chart:hover .memory-bar {
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bar-item {
+  height: 100%;
+  transition: all var(--transition-slow);
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left var(--transition-slow);
+}
+
+.bar-item:hover::after {
+  left: 100%;
+}
+
+.bar-item.system-reserved {
+  background-color: var(--info-color);
+}
+
+.bar-item.used {
+  background-color: var(--primary-color);
+}
+
+.bar-item.buffer {
+  background-color: var(--success-color);
+}
+
+.bar-item.cache {
+  background-color: var(--warning-color);
+}
+
+.bar-item.free {
+  background-color: var(--error-color);
+}
+
+.memory-legend {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+}
+
+.memory-chart:hover .memory-legend {
+  background-color: var(--bg-tertiary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-regular);
+  transition: all var(--transition-normal);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.legend-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.legend-item .color {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.legend-item:hover .color {
+  transform: scale(1.2);
+  box-shadow: var(--shadow-md);
+}
+
+.color.system-reserved {
+  background-color: var(--info-color);
+}
+
+.color.used {
+  background-color: var(--primary-color);
+}
+
+.color.buffer {
+  background-color: var(--success-color);
+}
+
+.color.cache {
+  background-color: var(--warning-color);
+}
+
+.color.free {
+  background-color: var(--error-color);
+}
+
+.memory-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* 网络详情 */
+.network-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.network-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.network-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.network-header h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background-color: var(--info-color);
+  border-radius: var(--border-radius-full);
+}
+
+.network-settings {
+  font-size: var(--font-size-sm);
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-focus);
+  background-color: var(--primary-light);
+}
+
+.network-settings:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.network-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.network-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--info-color), var(--primary-color));
+}
+
+.network-chart:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.network-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.network-interfaces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.interface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.interface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.interface:hover {
+  background-color: var(--bg-primary);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
+  border-color: var(--primary-color);
+}
+
+.interface:hover::before {
+  transform: scaleX(1);
+}
+
+.interface h4 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-normal);
+}
+
+.interface:hover h4 {
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.interface-chart {
+  height: 120px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.interface:hover .interface-chart {
+  background-color: var(--primary-light);
+}
+
+.interface-chart .chart {
+  background: linear-gradient(to bottom, var(--info-light), var(--bg-tertiary));
+}
+
+.interface:hover .interface-chart .chart {
+  background: linear-gradient(to bottom, var(--primary-light), var(--info-light));
+}
+
+/* GPU详情 */
+.gpu-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.gpu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.gpu-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.gpu-header h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background-color: var(--warning-color);
+  border-radius: var(--border-radius-full);
+}
+
+.gpu-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-regular);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.gpu-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.gpu-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--warning-color), var(--error-color));
+}
+
+.gpu-chart:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.gpu-memory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+}
+
+.gpu-chart:hover .gpu-memory {
+  background-color: var(--bg-tertiary);
+}
+
+.gpu-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  .overview-cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+  }
+  
+  .cpu-stats,
+  .memory-stats,
+  .network-stats,
+  .gpu-stats {
+    flex-wrap: wrap;
+  }
+  
+  .network-interfaces {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    min-width: 150px;
+  }
+  
+  .disk-table {
+    padding: var(--spacing-md);
+  }
+  
+  .tab-content {
+    padding: var(--spacing-md);
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard {
-    padding: 0;
+  .status-tabs {
+    margin: 0;
+    border-radius: var(--border-radius-md);
   }
   
-  .dashboard h2 {
-    font-size: 20px;
-    margin-bottom: 20px;
+  .overview-cards {
+    grid-template-columns: 1fr;
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
   }
   
-  /* 响应式布局：在小屏幕上改为垂直排列 */
-  .main-content-container {
+  .disk-table-card {
+    margin: var(--spacing-md) 0;
+    border-radius: var(--border-radius-md) !important;
+  }
+  
+  .disk-table {
+    padding: var(--spacing-md);
+  }
+  
+  .tab-content {
+    padding: var(--spacing-md);
+  }
+  
+  :deep(.el-tabs__item) {
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-xs);
+    height: 48px;
+    line-height: 48px;
+  }
+  
+  .cpu-header,
+  .memory-header,
+  .network-header,
+  .gpu-header {
     flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
   
-  .metrics-grid {
+  .cpu-info,
+  .memory-type,
+  .gpu-info {
+    width: 100%;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+  }
+  
+  .cpu-stats,
+  .memory-stats,
+  .network-stats,
+  .gpu-stats {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .network-interfaces {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
   
-  .system-info {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
+  .stat-item {
+    min-width: 100%;
   }
   
-  .docker-stats {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .chart-container {
+    height: 200px;
   }
   
-  .metric-card,
-  .system-info-card,
-  .docker-card {
-    margin-bottom: 16px;
+  .interface-chart {
+    height: 100px;
   }
   
-  .card-header span {
-    font-size: 14px;
+  .memory-legend {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .legend-item {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
-/* 加载动画 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+@media (max-width: 480px) {
+  .status-tabs {
+    margin: 0;
+    border-radius: var(--border-radius-sm);
   }
-  50% {
-    opacity: 0.6;
+  
+  .overview-cards {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .disk-table-card {
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--border-radius-sm) !important;
+  }
+  
+  .disk-table {
+    padding: var(--spacing-sm);
+  }
+  
+  .tab-content {
+    padding: var(--spacing-sm);
+  }
+  
+  :deep(.el-tabs__item) {
+    padding: 0 var(--spacing-sm);
+    font-size: 12px;
+    height: 44px;
+    line-height: 44px;
+  }
+  
+  .card-title {
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .card-title i {
+    font-size: 16px;
+  }
+  
+  .gauge {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .gauge::before {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .gauge-value {
+    font-size: var(--font-size-md);
+  }
+  
+  .chart-container {
+    height: 160px;
+  }
+  
+  .interface-chart {
+    height: 80px;
+  }
+  
+  .stat-item {
+    padding: var(--spacing-md);
+  }
+  
+  .stat-value {
+    font-size: var(--font-size-lg);
+  }
+  
+  .info-item .value {
+    font-size: var(--font-size-sm);
+  }
+  
+  .disk-type {
+    gap: var(--spacing-sm);
+  }
+  
+  .disk-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: var(--spacing-sm) !important;
+    font-size: var(--font-size-xs);
   }
 }
 
-.info-item.loading,
-.memory-details.loading,
-.network-item.loading,
-.disk-item.loading,
-.container-item.loading {
-  animation: pulse 1.5s ease-in-out infinite;
+/* 可访问性增强 */
+.overview-card:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.stat-item:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.network-settings:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.interface:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* 键盘导航增强 */
+.overview-card:focus {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.stat-item:focus {
+  background-color: var(--bg-primary);
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
+}
+
+.network-settings:focus {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.interface:focus {
+  background-color: var(--bg-primary);
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
+}
+
+/* 屏幕阅读器支持 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .overview-card {
+    border: 2px solid var(--border-primary-high-contrast) !important;
+  }
+  
+  .stat-item {
+    border: 2px solid var(--border-primary-high-contrast);
+  }
+  
+  .interface {
+    border: 2px solid var(--border-primary-high-contrast);
+  }
+  
+  .network-settings {
+    border: 2px solid var(--primary-color-high-contrast);
+  }
+  
+  .disk-table-card {
+    border: 2px solid var(--border-primary-high-contrast) !important;
+  }
+  
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    border-bottom: 2px solid var(--border-primary-high-contrast) !important;
+  }
+  
+  :deep(.el-tabs__active-bar) {
+    height: 4px;
+  }
+  
+  :deep(.el-tabs__item) {
+    border: 1px solid var(--border-primary-high-contrast);
+    margin: 0 4px;
+    border-radius: var(--border-radius-md) !important;
+  }
+  
+  :deep(.el-tabs__item.is-active) {
+    border-color: var(--primary-color-high-contrast);
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .overview-card,
+  .stat-item,
+  .interface,
+  .chart-container,
+  .memory-bar,
+  .bar-item,
+  .legend-item {
+    transition: none;
+  }
+  
+  .overview-card:hover,
+  .stat-item:hover,
+  .interface:hover,
+  .chart-container:hover,
+  .legend-item:hover {
+    transform: none;
+  }
 }
 </style>

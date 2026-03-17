@@ -152,37 +152,7 @@ const handleLogin = async () => {
 }
 </script>
 
-<style>
-/* 全局CSS变量 */
-:root {
-  --primary-color: #4F46E5;
-  --secondary-color: #7C3AED;
-  --accent-color: #8B5CF6;
-  --text-color: #1E293B;
-  --text-light-color: #64748B;
-  --background-light: #FFFFFF;
-  --background-dark: #F8FAFC;
-  --error-color: #EF4444;
-  --success-color: #10B981;
-  --warning-color: #F59E0B;
-  --gradient-start: #4F46E5;
-  --gradient-end: #7C3AED;
-  --transition-speed: 0.3s;
-  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-</style>
 
 <style scoped>
 /* 登录容器 */
@@ -193,12 +163,8 @@ body {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-/* 暗黑模式 */
-.login-container.dark-mode {
-  background-color: #0f172a;
+  transition: all var(--transition-normal);
+  background-color: var(--bg-secondary);
 }
 
 /* 背景装饰 */
@@ -217,13 +183,9 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
   opacity: 0.9;
-  transition: all var(--transition-speed) var(--transition-ease);
-}
-
-.login-container.dark-mode .bg-gradient {
-  opacity: 0.7;
+  transition: all var(--transition-normal);
 }
 
 .bg-blobs {
@@ -240,11 +202,7 @@ body {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   animation: blob-move 20s infinite alternate ease-in-out;
-  transition: all 0.3s ease;
-}
-
-.login-container.dark-mode .blob {
-  background: rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-normal);
 }
 
 .blob-1 {
@@ -274,54 +232,44 @@ body {
 
 /* 登录表单包装 */
 .login-form-wrapper {
-  background-color: var(--background-light);
+  background-color: var(--bg-primary);
   backdrop-filter: blur(10px);
-  padding: 60px 48px;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  padding: var(--spacing-xxl) var(--spacing-xl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
   width: 460px;
   max-width: 90%;
   text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   border: 1px solid rgba(255, 255, 255, 0.2);
   animation: fadeInUp 0.8s ease-out;
   position: relative;
 }
 
-.login-container.dark-mode .login-form-wrapper {
-  background-color: var(--background-light);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
 .login-form-wrapper:hover {
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-8px);
-}
-
-.login-container.dark-mode .login-form-wrapper:hover {
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.4);
 }
 
 /* 品牌标识 */
 .brand-section {
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-xl);
   animation: fadeInDown 0.6s ease-out;
 }
 
 .brand-icon {
   width: 80px;
   height: 80px;
-  margin: 0 auto 24px;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  margin: 0 auto var(--spacing-lg);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 8px 24px rgba(51, 112, 255, 0.3);
   animation: pulse 2s infinite;
-  transition: all var(--transition-speed) var(--transition-ease);
+  transition: all var(--transition-normal);
 }
 
 .brand-icon svg {
@@ -329,22 +277,22 @@ body {
 }
 
 .login-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-color);
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  transition: all var(--transition-speed) var(--transition-ease);
+  transition: all var(--transition-normal);
 }
 
 .login-subtitle {
-  font-size: 16px;
-  color: var(--text-light-color);
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
   margin-bottom: 0;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
 }
 
 /* 表单样式 */
@@ -354,38 +302,48 @@ body {
 }
 
 :deep(.el-form-item) {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
   width: 100%;
 }
 
 .input-wrapper {
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
-  background-color: var(--background-dark);
-  transition: all 0.3s ease;
+  background-color: var(--bg-secondary);
+  transition: all var(--transition-normal);
   width: 100%;
+  border: 1px solid var(--border-light);
 }
 
 .input-wrapper:hover {
-  background-color: #f1f3f5;
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-focus);
 }
 
-
+.input-wrapper:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
 
 .input-icon {
   position: absolute;
-  left: 16px;
+  left: var(--spacing-md);
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-light-color);
+  color: var(--text-secondary);
   z-index: 1;
   width: 18px;
   height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--primary-color);
+  transform: translateY(-50%) scale(1.1);
 }
 
 :deep(.el-input) {
@@ -404,19 +362,19 @@ body {
 }
 
 :deep(.el-input__inner) {
-  font-size: 16px;
-  color: var(--text-color);
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
   height: 52px !important;
   line-height: 52px !important;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   width: 100% !important;
   background: transparent !important;
+  font-family: inherit;
 }
-
-
 
 :deep(.el-input__inner:focus) {
   letter-spacing: 0.5px;
+  color: var(--primary-color);
 }
 
 /* 表单选项 */
@@ -424,7 +382,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
   animation: fadeIn 0.8s ease-out 0.4s both;
   width: 100%;
 }
@@ -435,39 +393,47 @@ body {
 }
 
 :deep(.el-checkbox__label) {
-  font-size: 14px;
-  color: var(--text-light-color);
-  margin-left: 8px;
-  transition: all 0.3s ease;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-left: var(--spacing-sm);
+  transition: all var(--transition-normal);
+}
+
+:deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .forgot-password {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   color: var(--primary-color);
   text-decoration: none;
-  transition: all 0.3s ease;
-  padding: 4px 8px;
-  border-radius: 4px;
+  transition: all var(--transition-normal);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
 }
 
 .forgot-password:hover {
-  color: var(--secondary-color);
+  color: var(--primary-active);
   text-decoration: underline;
-  background-color: rgba(102, 126, 234, 0.1);
+  background-color: var(--primary-light);
 }
 
-
+.forgot-password:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
 
 /* 按钮样式 */
 .login-button {
   width: 100%;
   height: 52px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-lg);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
   border: none;
-  transition: all var(--transition-speed) var(--transition-ease);
+  transition: all var(--transition-normal);
   animation: fadeInUp 0.6s ease-out 0.5s both;
   display: flex;
   align-items: center;
@@ -475,6 +441,7 @@ body {
   color: white;
   position: relative;
   overflow: hidden;
+  font-family: inherit;
 }
 
 .login-button::before {
@@ -485,7 +452,7 @@ body {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  transition: left var(--transition-slow);
 }
 
 .login-button:hover::before {
@@ -493,8 +460,8 @@ body {
 }
 
 .login-button:hover {
-  background: linear-gradient(135deg, var(--gradient-end) 0%, var(--gradient-start) 100%);
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, var(--info-color) 0%, var(--primary-color) 100%);
+  box-shadow: 0 8px 24px rgba(51, 112, 255, 0.4);
   transform: translateY(-4px);
 }
 
@@ -502,70 +469,80 @@ body {
   transform: translateY(0);
 }
 
+.login-button:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
 /* 提示信息 */
 .login-tips {
-  margin-top: 24px;
+  margin-top: var(--spacing-lg);
   animation: fadeIn 0.8s ease-out 0.8s both;
 }
 
 :deep(.el-alert) {
-  border-radius: 12px;
-  background-color: rgba(231, 76, 60, 0.1);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--error-light);
   border-color: var(--error-color);
 }
 
 :deep(.el-alert__content) {
   color: var(--error-color);
+  font-size: var(--font-size-sm);
 }
 
 /* 底部信息 */
 .login-footer {
-  margin-top: 40px;
+  margin-top: var(--spacing-xl);
   animation: fadeInUp 0.6s ease-out 0.9s both;
 }
 
 .login-footer p {
-  font-size: 14px;
-  color: var(--text-light-color);
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  transition: all var(--transition-normal);
 }
 
 .footer-links {
-  font-size: 14px;
-  color: var(--text-light-color);
-  transition: all 0.3s ease;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: all var(--transition-normal);
 }
 
 .footer-links a {
   color: var(--primary-color);
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
 }
 
 .footer-links a:hover {
-  color: var(--secondary-color);
+  color: var(--primary-active);
   text-decoration: underline;
+  background-color: var(--primary-light);
+}
+
+.footer-links a:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
 }
 
 .footer-links span {
-  margin: 0 8px;
+  margin: 0 var(--spacing-sm);
 }
-
-
-
-
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .login-form-wrapper {
-    padding: 48px 36px;
+    padding: var(--spacing-xl) var(--spacing-lg);
     width: 90%;
     max-width: 400px;
   }
   
   .login-title {
-    font-size: 28px;
+    font-size: var(--font-size-xl);
   }
   
   .brand-icon {
@@ -574,7 +551,7 @@ body {
   }
   
   :deep(.el-form-item) {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-md);
   }
   
   .input-wrapper {
@@ -589,82 +566,68 @@ body {
   .input-icon {
     width: 16px;
     height: 16px;
-    left: 14px;
+    left: var(--spacing-sm);
   }
   
   :deep(.el-input__inner) {
     height: 48px !important;
     line-height: 48px !important;
-    font-size: 15px;
+    font-size: var(--font-size-md);
   }
   
   .form-options {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-md);
   }
   
   :deep(.el-checkbox__label) {
-    font-size: 13px;
+    font-size: var(--font-size-xs);
   }
   
   .forgot-password {
-    font-size: 13px;
+    font-size: var(--font-size-xs);
   }
   
   .login-button {
     height: 48px;
-    font-size: 16px;
+    font-size: var(--font-size-md);
   }
   
   .login-tips {
-    margin-top: 20px;
+    margin-top: var(--spacing-md);
   }
   
   .login-footer {
-    margin-top: 32px;
-  }
-  
-  .theme-toggle {
-    top: 16px;
-    right: 16px;
-  }
-  
-  .theme-button {
-    padding: 6px;
-  }
-  
-  .theme-button svg {
-    width: 16px;
-    height: 16px;
+    margin-top: var(--spacing-lg);
   }
 }
 
 @media (max-width: 480px) {
   .login-form-wrapper {
-    padding: 36px 24px;
+    padding: var(--spacing-lg) var(--spacing-md);
     width: 95%;
     max-width: 360px;
   }
   
   .brand-section {
-    margin-bottom: 32px;
+    margin-bottom: var(--spacing-lg);
   }
   
   .login-title {
-    font-size: 24px;
+    font-size: var(--font-size-lg);
   }
   
   .login-subtitle {
-    font-size: 14px;
+    font-size: var(--font-size-sm);
   }
   
   .brand-icon {
     width: 60px;
     height: 60px;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
   }
   
   :deep(.el-form-item) {
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
   }
   
   .input-wrapper {
@@ -679,74 +642,51 @@ body {
   .input-icon {
     width: 14px;
     height: 14px;
-    left: 12px;
+    left: var(--spacing-sm);
   }
   
   :deep(.el-input__inner) {
     height: 44px !important;
     line-height: 44px !important;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
   }
   
   .form-options {
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
   }
   
   :deep(.el-checkbox__label) {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
   
   .forgot-password {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
   
   .login-button {
     height: 44px;
-    font-size: 15px;
+    font-size: var(--font-size-md);
   }
   
   .login-tips {
-    margin-top: 16px;
+    margin-top: var(--spacing-md);
   }
   
   .login-footer {
-    margin-top: 24px;
+    margin-top: var(--spacing-lg);
   }
   
   .login-footer p {
-    font-size: 12px;
-    margin-bottom: 8px;
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--spacing-xs);
   }
   
   .footer-links {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
   
   .footer-links span {
-    margin: 0 4px;
-  }
-  
-  .theme-toggle {
-    top: 12px;
-    right: 12px;
-  }
-  
-  .theme-button {
-    padding: 4px;
-  }
-  
-  .theme-button svg {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .color-scheme-selector {
-    margin-top: 16px;
-  }
-  
-  .scheme-button {
-    width: 20px;
-    height: 20px;
+    margin: 0 var(--spacing-xs);
   }
 }
 
@@ -784,13 +724,13 @@ body {
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 24px rgba(51, 112, 255, 0.3);
   }
   50% {
-    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 32px rgba(51, 112, 255, 0.4);
   }
   100% {
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 24px rgba(51, 112, 255, 0.3);
   }
 }
 
@@ -803,6 +743,69 @@ body {
   }
   100% {
     transform: translate(100px, 20px) scale(0.9);
+  }
+}
+
+/* 可访问性增强 */
+@media (prefers-reduced-motion: reduce) {
+  .login-form-wrapper,
+  .brand-icon,
+  .input-wrapper,
+  .input-icon,
+  .login-button,
+  .forgot-password,
+  .footer-links a {
+    transition: none;
+  }
+  
+  .login-form-wrapper:hover,
+  .input-wrapper:focus-within .input-icon {
+    transform: none;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 8px 24px rgba(51, 112, 255, 0.3);
+    }
+    100% {
+      box-shadow: 0 8px 24px rgba(51, 112, 255, 0.3);
+    }
+  }
+  
+  @keyframes blob-move {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
   }
 }
 </style>
