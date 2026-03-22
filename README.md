@@ -36,10 +36,38 @@ Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps
 
 ## 版本信息
 
-**当前版本**：v2.1.0
-**发布日期**：2026-03-12
+**当前版本**：v2.1.1
+**发布日期**：2026-03-23
 
 ## 迭代更新记录
+
+### v2.1.1 (2026-03-23) 🔒 安全与代码质量优化
+
+**安全修复**：
+- 🔴 移除 `auth.py` 密码后门（`admin123`/`password` 绕过验证的漏洞）
+- 🔴 JWT 密钥改用环境变量 `JWT_SECRET_KEY`，不再硬编码
+- 🔴 移除 `Login.vue` 默认预填密码
+- 🔴 InfluxDB 密码改用环境变量 `${INFLUXDB_PASSWORD}`，不再硬编码
+- 🔴 CORS 限制为指定域名，不再允许 `*`
+
+**依赖升级**：
+- ⬆️ FastAPI `0.68.0` → `0.115.0+`
+- ⬆️ Pydantic `1.9.2` → `2.0.0+`
+- ⬆️ Uvicorn `0.22.0` → `0.34.0+`
+- ⬆️ Docker `6.1.3` → `7.0.0+`
+- ⬆️ psutil、aiofiles、aiohttp 等同步升级
+
+**代码优化**：
+- 🐛 修复 `system_service.py` 中 `datetime.timedelta` 引用 bug
+- ♻️ 重构 `docker_service.py`，抽取 `_get_client()` 公共方法，消除 8 处重复代码
+- 📝 全部 `print()` 替换为 `logging`（涉及 14 个文件），支持日志级别控制
+- 🛡️ `io_service.py` 添加空值保护和异常处理
+- 🔐 `api.ts` 添加 401 响应自动跳转登录页
+- 📄 新增 `.env.example` 环境变量配置模板
+
+**配置变更**：
+- 新增环境变量：`JWT_SECRET_KEY`、`TOKEN_EXPIRE_MINUTES`、`LOG_LEVEL`、`CORS_ORIGINS`
+- 新增文件：`.env.example`
 
 ### v2.1.0 (2026-03-12)
 
@@ -179,6 +207,24 @@ curl -fsSL https://gitee.com/threely/nas-monitor/raw/main/deploy.sh | bash
 ```powershell
 # 使用Invoke-WebRequest执行一键部署脚本
 Invoke-WebRequest -Uri 'https://gitee.com/threely/nas-monitor/raw/main/deploy.ps1' -OutFile 'deploy.ps1'; .\deploy.ps1
+```
+
+#### ⚠️ 部署前配置（重要！）
+
+```bash
+# 复制环境变量模板
+cp .env.example .env
+
+# 编辑 .env 文件，修改以下关键配置：
+# 1. JWT 密钥（必须修改！）
+#    生成方式: openssl rand -hex 32
+JWT_SECRET_KEY=your-generated-secret-key
+
+# 2. InfluxDB 密码
+INFLUXDB_PASSWORD=your_secure_password
+
+# 3. CORS 域名（根据实际部署环境修改）
+CORS_ORIGINS=http://your-domain.com,https://your-domain.com
 ```
 
 ### 3. 部署过程说明
