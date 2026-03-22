@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("nas-monitor.feishu")
 import asyncio
 import aiohttp
 import logging
@@ -133,8 +135,8 @@ class FeishuLongPolling:
 # 示例使用
 async def example_message_handler(event_type: str, event_body: Dict):
     """示例消息处理器"""
-    print(f"处理事件类型: {event_type}")
-    print(f"事件内容: {json.dumps(event_body, indent=2, ensure_ascii=False)}")
+    logger.debug(f"Processing event type: {event_type}")
+    logger.debug(f"Event body: {json.dumps(event_body, indent=2, ensure_ascii=False)}")
 
 async def main():
     """主函数"""

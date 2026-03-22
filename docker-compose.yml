@@ -19,6 +19,10 @@ services:
       - INFLUXDB_ORG=nas_monitor
       - INFLUXDB_BUCKET=nas_metrics
       - PROMETHEUS_URL=http://prometheus:9090
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+      - TOKEN_EXPIRE_MINUTES=${TOKEN_EXPIRE_MINUTES:-30}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:3003}
     restart: unless-stopped
     depends_on:
       - influxdb
@@ -61,17 +65,17 @@ services:
     image: influxdb:2.7
     container_name: nas-influxdb
     ports:
-      - 8087:8086
+      - "8087:8086"
     volumes:
       - ./influxdb/data:/var/lib/influxdb2
       - ./influxdb/config:/etc/influxdb2
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=nas_admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=Nas@123456
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME:-nas_admin}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
       - DOCKER_INFLUXDB_INIT_ORG=nas_monitor
       - DOCKER_INFLUXDB_INIT_BUCKET=nas_metrics
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=nas_monitor_token
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-nas_monitor_token}
     restart: unless-stopped
 
   # Prometheus（监控数据采集和存储）

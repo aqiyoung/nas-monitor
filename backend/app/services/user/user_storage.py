@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("nas-monitor.user_storage")
 import json
 import os
 import uuid
@@ -19,7 +21,7 @@ class UserStorage:
         
         # 确保存储目录存在
         os.makedirs(self.storage_dir, exist_ok=True)
-        print(f"UserStorage initialized with storage_dir: {self.storage_dir}")
+        logger.info(f"UserStorage initialized with storage_dir: {self.storage_dir}")
         
         # 加载数据
         self._load_data()
@@ -45,7 +47,7 @@ class UserStorage:
                         user = User(**item)
                         self.users[user.username] = user
             except Exception as e:
-                print(f"Error loading users: {e}")
+                logger.error(f"Error loading users: {e}")
     
     def _save_data(self):
         """保存数据到文件"""
@@ -55,7 +57,7 @@ class UserStorage:
                 data = [user.dict() for user in self.users.values()]
                 json.dump(data, f, default=str, indent=2)
         except Exception as e:
-            print(f"Error saving users: {e}")
+            logger.error(f"Error saving users: {e}")
     
     def _ensure_admin_user(self):
         """确保存在管理员用户"""
@@ -71,7 +73,7 @@ class UserStorage:
                 updated_at=datetime.now()
             )
             self.users[admin_user.username] = admin_user
-            print(f"Created new admin user: {admin_user.username}")
+            logger.info(f"Created new admin user: {admin_user.username}")
         else:
             # 检查现有管理员用户的密码是否正确
             admin_user = self.users["admin"]
@@ -79,7 +81,7 @@ class UserStorage:
                 # 更新密码为默认密码
                 admin_user.hashed_password = pwd_context.hash("password")
                 admin_user.updated_at = datetime.now()
-                print(f"Updated admin password to default")
+                logger.warning("Updated admin password to default - CHANGE THIS IN PRODUCTION")
         
         if admin_user:
             self._save_data()

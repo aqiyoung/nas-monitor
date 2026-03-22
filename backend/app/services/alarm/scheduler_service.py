@@ -1,7 +1,9 @@
+import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from app.services.alarm.alarm_detector import alarm_detector
-import time
+
+logger = logging.getLogger("nas-monitor.scheduler")
 
 class AlarmScheduler:
     """告警定时任务服务"""
@@ -10,6 +12,7 @@ class AlarmScheduler:
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
         self._setup_jobs()
+        logger.info("Alarm scheduler started")
     
     def _setup_jobs(self):
         """设置定时任务"""

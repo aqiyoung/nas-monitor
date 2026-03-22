@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("nas-monitor.ip_geo")
 import requests
 from typing import Dict, Optional
 
@@ -24,7 +26,7 @@ class IPGeolocationService:
                     "org": data.get("org", "")
                 }
         except Exception as e:
-            print(f"Error getting geolocation for {ip_address}: {e}")
+            logger.error(f"Error getting geolocation for {ip_address}: {e}")
         
         # 如果获取失败，返回空信息
         return {

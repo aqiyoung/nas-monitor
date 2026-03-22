@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("nas-monitor.websocket")
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 import uuid
 from app.services.websocket.websocket_service import manager
@@ -78,5 +80,5 @@ async def websocket_endpoint(
         manager.disconnect(client_id)
     except Exception as e:
         # 其他错误
-        print(f"WebSocket错误: {str(e)}")
+        logger.error(f"WebSocket error: {str(e)}")
         manager.disconnect(client_id)

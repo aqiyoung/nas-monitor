@@ -1,16 +1,42 @@
+import logging
+
+logger = logging.getLogger("nas-monitor.docker")
+
+try:
+    import docker
+    from docker.errors import DockerException
+except ImportError:
+    logger.warning("Docker library not installed. Docker features will be disabled.")
+    docker = None
+    DockerException = Exception
+
+
+def _get_client():
+    """获取 Docker 客户端，失败返回 None"""
+    if docker is None:
+        logger.warning("Docker library not available")
+        return None
+    try:
+        return docker.from_env()
+    except DockerException as e:
+        logger.error(f"Docker API error: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error connecting to Docker: {e}")
+        return None
+
+
 def get_containers():
     """获取所有容器信息"""
+    client = _get_client()
+    if client is None:
+        return []
+
     result = []
     try:
-        import docker
-        client = docker.from_env()
-        containers = client.containers.list(all=True)
-        
-        for container in containers:
+        for container in client.containers.list(all=True):
             try:
-                # 获取镜像标签，处理空列表情况
                 image_tag = container.image.tags[0] if container.image.tags else container.image.id
-                
                 result.append({
                     "id": container.id,
                     "name": container.name,
@@ -18,36 +44,28 @@ def get_containers():
                     "image": image_tag,
                     "created": container.attrs["Created"],
                     "ports": container.attrs["NetworkSettings"]["Ports"],
-                    "command": container.attrs["Config"]["Cmd"]
+                    "command": container.attrs["Config"]["Cmd"],
                 })
             except Exception as e:
-                # 跳过有问题的容器，继续处理其他容器
-                print(f"Error processing container {container.id}: {e}")
+                logger.error(f"Error processing container {container.id}: {e}")
                 continue
-        
+    except (DockerException, Exception) as e:
+        logger.error(f"Error listing containers: {e}")
+    finally:
         client.close()
-    except ImportError:
-        # 记录错误，但返回空列表而不是错误对象，以便前端能正常处理
-        print("Docker library not installed.")
-    except docker.errors.DockerException as e:
-        # 记录错误，但返回空列表而不是错误对象，以便前端能正常处理
-        print(f"Docker API error: {e}")
-        print(f"Docker service might not be running or not installed.")
-    except Exception as e:
-        # 捕获其他所有异常，确保函数始终返回列表
-        print(f"Unexpected error in get_containers: {e}")
-    
+
     return result
+
 
 def get_docker_stats():
     """获取 Docker 容器统计信息"""
+    client = _get_client()
+    if client is None:
+        return []
+
     stats = []
     try:
-        import docker
-        client = docker.from_env()
-        containers = client.containers.list()
-        
-        for container in containers:
+        for container in client.containers.list():
             try:
                 container_stats = container.stats(stream=False)
                 stats.append({
@@ -56,248 +74,139 @@ def get_docker_stats():
                     "memory_usage": container_stats["memory_stats"]["usage"],
                     "memory_limit": container_stats["memory_stats"]["limit"],
                     "network": container_stats["networks"],
-                    "blkio": container_stats["blkio_stats"]
+                    "blkio": container_stats["blkio_stats"],
                 })
             except Exception as e:
-                # 跳过有问题的容器，继续处理其他容器
-                print(f"Error getting stats for container {container.name}: {e}")
+                logger.error(f"Error getting stats for container {container.name}: {e}")
                 continue
-        
+    except (DockerException, Exception) as e:
+        logger.error(f"Error getting Docker stats: {e}")
+    finally:
         client.close()
-    except ImportError:
-        # 记录错误，但返回空列表而不是错误对象
-        print("Docker library not installed.")
-    except docker.errors.DockerException as e:
-        # 记录错误，但返回空列表而不是错误对象
-        print(f"Docker API error in get_docker_stats: {e}")
-        print(f"Docker service might not be running or not installed.")
-    except Exception as e:
-        # 捕获其他所有异常，确保函数始终返回列表
-        print(f"Unexpected error in get_docker_stats: {e}")
-    
+
     return stats
+
 
 def get_images():
     """获取 Docker 镜像信息"""
+    client = _get_client()
+    if client is None:
+        return []
+
     result = []
     try:
-        import docker
-        client = docker.from_env()
-        images = client.images.list()
-        
-        for image in images:
+        for image in client.images.list():
             try:
                 result.append({
                     "id": image.id,
                     "tags": image.tags,
                     "created": image.attrs["Created"],
                     "size": image.attrs["Size"],
-                    "virtual_size": image.attrs["VirtualSize"]
+                    "virtual_size": image.attrs["VirtualSize"],
                 })
             except Exception as e:
-                # 跳过有问题的镜像，继续处理其他镜像
-                print(f"Error processing image {image.id}: {e}")
+                logger.error(f"Error processing image {image.id}: {e}")
                 continue
-        
+    except (DockerException, Exception) as e:
+        logger.error(f"Error listing images: {e}")
+    finally:
         client.close()
-    except ImportError:
-        # 记录错误，但返回空列表而不是错误对象
-        print("Docker library not installed.")
-    except docker.errors.DockerException as e:
-        # 记录错误，但返回空列表而不是错误对象
-        print(f"Docker API error in get_images: {e}")
-        print(f"Docker service might not be running or not installed.")
-    except Exception as e:
-        # 捕获其他所有异常，确保函数始终返回列表
-        print(f"Unexpected error in get_images: {e}")
-    
+
     return result
+
 
 def pull_image(image_name):
     """拉取最新的 Docker 镜像"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
-        # 拉取最新的镜像
         image = client.images.pull(image_name)
+        return {"success": True, "image_id": image.id, "tags": image.tags}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error pulling image {image_name}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "image_id": image.id,
-            "tags": image.tags
-        }
-    except ImportError:
-        # 记录错误，但返回失败响应而不是错误对象
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in pull_image: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in pull_image: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
 
 def delete_image(image_id):
     """删除 Docker 镜像"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
-        # 删除镜像，force=True 强制删除
         client.images.remove(image_id, force=True)
+        return {"success": True, "message": "镜像删除成功"}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error deleting image {image_id}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "message": "镜像删除成功"
-        }
-    except ImportError:
-        # 记录错误，但返回失败响应而不是错误对象
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in delete_image: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in delete_image: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
 
 def start_container(container_id):
     """启动容器"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
-        container = client.containers.get(container_id)
-        container.start()
+        client.containers.get(container_id).start()
+        return {"success": True, "message": "容器启动成功"}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error starting container {container_id}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "message": "容器启动成功"
-        }
-    except ImportError:
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in start_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in start_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
 
 def stop_container(container_id):
     """停止容器"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
-        container = client.containers.get(container_id)
-        container.stop()
+        client.containers.get(container_id).stop()
+        return {"success": True, "message": "容器停止成功"}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error stopping container {container_id}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "message": "容器停止成功"
-        }
-    except ImportError:
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in stop_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in stop_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
 
 def restart_container(container_id):
     """重启容器"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
-        container = client.containers.get(container_id)
-        container.restart()
+        client.containers.get(container_id).restart()
+        return {"success": True, "message": "容器重启成功"}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error restarting container {container_id}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "message": "容器重启成功"
-        }
-    except ImportError:
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in restart_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in restart_container: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
 
 def get_container_logs(container_id, tail=100):
     """获取容器日志"""
+    client = _get_client()
+    if client is None:
+        return {"success": False, "error": "Docker library not available"}
+
     try:
-        import docker
-        client = docker.from_env()
         container = client.containers.get(container_id)
-        logs = container.logs(tail=tail).decode('utf-8')
+        logs = container.logs(tail=tail).decode("utf-8")
+        return {"success": True, "logs": logs}
+    except (DockerException, Exception) as e:
+        logger.error(f"Error getting logs for container {container_id}: {e}")
+        return {"success": False, "error": str(e)}
+    finally:
         client.close()
-        return {
-            "success": True,
-            "logs": logs
-        }
-    except ImportError:
-        print("Docker library not installed.")
-        return {
-            "success": False,
-            "error": "Docker library not installed"
-        }
-    except docker.errors.DockerException as e:
-        print(f"Docker API error in get_container_logs: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    except Exception as e:
-        print(f"Unexpected error in get_container_logs: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }

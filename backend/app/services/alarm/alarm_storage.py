@@ -1,8 +1,11 @@
 import json
 import os
+import logging
 from datetime import datetime
 from typing import List, Dict, Optional
 from app.models.alarm.alarm_models import AlarmConfig, AlarmRecord, AccessIP
+
+logger = logging.getLogger("nas-monitor.alarm_storage")
 
 class AlarmStorage:
     """告警存储服务"""
@@ -34,7 +37,7 @@ class AlarmStorage:
                         config = AlarmConfig(**item)
                         self.alarm_configs[config.id] = config
             except Exception as e:
-                print(f"Error loading alarm configs: {e}")
+                logger.error(f"Error loading alarm configs: {e}")
         
         # 加载告警记录
         records_file = os.path.join(self.storage_dir, "alarm_records.json")
@@ -50,7 +53,7 @@ class AlarmStorage:
                         record = AlarmRecord(**item)
                         self.alarm_records[record.id] = record
             except Exception as e:
-                print(f"Error loading alarm records: {e}")
+                logger.error(f"Error loading alarm records: {e}")
         
         # 加载访问IP
         ips_file = os.path.join(self.storage_dir, "access_ips.json")
@@ -65,7 +68,7 @@ class AlarmStorage:
                         ip = AccessIP(**item)
                         self.access_ips[ip.ip_address] = ip
             except Exception as e:
-                print(f"Error loading access ips: {e}")
+                logger.error(f"Error loading access ips: {e}")
     
     def _save_data(self):
         """保存数据到文件"""
@@ -76,7 +79,7 @@ class AlarmStorage:
                 data = [config.dict() for config in self.alarm_configs.values()]
                 json.dump(data, f, default=str, indent=2)
         except Exception as e:
-            print(f"Error saving alarm configs: {e}")
+            logger.error(f"Error saving alarm configs: {e}")
         
         # 保存告警记录（只保留最近1000条）
         records_file = os.path.join(self.storage_dir, "alarm_records.json")
@@ -91,7 +94,7 @@ class AlarmStorage:
             with open(records_file, "w") as f:
                 json.dump(data, f, default=str, indent=2)
         except Exception as e:
-            print(f"Error saving alarm records: {e}")
+            logger.error(f"Error saving alarm records: {e}")
         
         # 保存访问IP
         ips_file = os.path.join(self.storage_dir, "access_ips.json")
@@ -100,7 +103,7 @@ class AlarmStorage:
                 data = [ip.dict() for ip in self.access_ips.values()]
                 json.dump(data, f, default=str, indent=2)
         except Exception as e:
-            print(f"Error saving access ips: {e}")
+            logger.error(f"Error saving access ips: {e}")
     
     # 告警配置管理
     def get_alarm_configs(self) -> List[AlarmConfig]:

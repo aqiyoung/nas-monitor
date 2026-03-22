@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("nas-monitor.alarm_api")
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List, Optional
 from app.models.alarm.alarm_models import (
@@ -211,7 +213,7 @@ def init_default_alarm_configs():
     if not configs:
         for default_config in get_default_alarm_configs():
             storage.create_alarm_config(default_config)
-        print("已初始化默认告警配置")
+        logger.info("Default alarm configs initialized")
 
 # 调用初始化函数
 init_default_alarm_configs()

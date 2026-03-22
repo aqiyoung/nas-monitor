@@ -29,6 +29,11 @@ api.interceptors.response.use(
     return response.data
   },
   error => {
+    // Token 过期或无效，自动跳转登录
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
     console.error('API Error:', error)
     return Promise.reject(error)
   }

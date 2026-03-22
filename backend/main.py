@@ -1,3 +1,5 @@
+import logging
+import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import system, network, io, docker, auth, user, alarm, notification, websocket
@@ -13,17 +15,27 @@ import app.services.notification.feishu_openclaw_provider
 import app.services.websocket.websocket_service
 from app.services.websocket.realtime_data_service import start_realtime_data_task
 
-app = FastAPI(title="运维监控中心 API", version="1.1.0")
+# 配置日志
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=getattr(logging, log_level, logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("nas-monitor")
+
+app = FastAPI(title="运维监控中心 API", version="2.0.0")
 
 # 启动实时数据推送任务
 start_realtime_data_task()
 
-# 配置 CORS
+# 配置 CORS（从环境变量读取允许的域名，默认仅允许本地）
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost,http://localhost:3003,http://127.0.0.1").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 

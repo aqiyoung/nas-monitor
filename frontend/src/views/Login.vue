@@ -106,8 +106,8 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 const loginForm = reactive({
-  username: 'admin',
-  password: 'password',
+  username: '',
+  password: '',
   remember: false
 })
 

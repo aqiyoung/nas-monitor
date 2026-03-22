@@ -1,4 +1,5 @@
 import time
+import logging
 from datetime import datetime
 from typing import Dict, List
 from app.models.alarm.alarm_models import AlarmConfig, AlarmRecord
@@ -8,6 +9,8 @@ from app.services.alarm.alarm_storage import storage
 from app.services.alarm.alarm_aggregator import alarm_aggregator
 from app.services.notification.notification_service import notification_service
 from app.services.websocket.websocket_service import send_alert_notification
+
+logger = logging.getLogger("nas-monitor.alarm")
 
 class AlarmDetector:
     """告警检测服务"""
@@ -182,7 +185,7 @@ class AlarmDetector:
         
         # 保存告警记录
         storage.create_alarm_record(record)
-        print(f"Created alarm: {record.message}")
+        logger.info(f"Created alarm: {record.message}")
         
         # 发送通知
         await notification_service.send_notification(record.message, record.severity)

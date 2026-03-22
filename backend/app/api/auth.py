@@ -1,3 +1,5 @@
+import os
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -7,6 +9,8 @@ from typing import Optional
 from pydantic import BaseModel
 from app.services.user.user_storage import storage
 
+logger = logging.getLogger("nas-monitor.auth")
+
 # 登录请求模型
 class LoginRequest(BaseModel):
     username: str
@@ -15,69 +19,50 @@ class LoginRequest(BaseModel):
 # 创建路由
 router = APIRouter()
 
-# 配置JWT
-SECRET_KEY = "your-secret-key-change-me-in-production"
+# 配置JWT（从环境变量读取，生产环境必须修改！）
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-me-in-production-use-openssl-rand-hex-32")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("TOKEN_EXPIRE_MINUTES", "30"))
 
-# 配置密码加密，使用pbkdf2_sha256替代bcrypt，避免密码长度限制
+# 配置密码加密
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # 配置OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-# 验证密码
-def verify_password(plain_password, hashed_password):
-    # 使用pbkdf2_sha256算法，没有密码长度限制
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """验证密码"""
     return pwd_context.verify(plain_password, hashed_password)
 
-# 获取用户
-def get_user(username: str):
-    user = storage.get_user(username)
-    if user:
-        return user.dict()
-    return None
 
-# 验证用户
-def authenticate_user(username: str, password: str):
-    print(f"=== 开始认证用户: {username} ===")
+def get_user(username: str):
+    """获取用户"""
     user = storage.get_user(username)
-    print(f"获取用户结果: {user}")
-    
+    return user.dict() if user else None
+
+
+def authenticate_user(username: str, password: str):
+    """认证用户（严格验证，无后门）"""
+    user = storage.get_user(username)
+
     if not user:
-        print(f"用户不存在: {username}")
+        logger.warning(f"Login attempt for non-existent user: {username}")
         return False
-    
-    # 调试信息
-    print(f"用户名: {username}")
-    print(f"密码: {password}")
-    print(f"哈希密码: {user.hashed_password}")
-    print(f"用户是否禁用: {user.disabled}")
-    
-    # 检查用户是否被禁用
+
     if user.disabled:
-        print(f"用户已禁用: {username}")
+        logger.warning(f"Login attempt for disabled user: {username}")
         return False
-    
-    # 使用默认密码登录（用于测试）
-    if (password == "admin123" or password == "password") and username == "admin":
-        print("使用默认密码绕过验证")
-        return user.dict()
-    
-    # 验证密码
-    print("开始密码验证...")
+
     try:
         is_valid = verify_password(password, user.hashed_password)
-        print(f"密码验证结果: {is_valid}")
-        
         if not is_valid:
-            print(f"密码验证失败 for user: {username}")
+            logger.warning(f"Invalid password for user: {username}")
             return False
-        
-        print(f"密码验证成功 for user: {username}")
+        logger.info(f"User authenticated successfully: {username}")
         return user.dict()
     except Exception as e:
-        print(f"密码验证过程中发生错误: {e}")
+        logger.error(f"Authentication error for user {username}: {e}")
         return False
 
 # 创建访问令牌
